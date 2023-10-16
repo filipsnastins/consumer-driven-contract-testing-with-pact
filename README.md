@@ -9,11 +9,13 @@ cd src/proto
 buf generate .
 ```
 
-- Run applications locally with Docker Compose
+- Run applications and Pact Broker locally with Docker Compose
 
 ```bash
 docker compose up
 ```
+
+- Pact Broker URL: <http://localhost:9292>
 
 - Create order
 

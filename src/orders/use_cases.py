@@ -1,7 +1,7 @@
 import structlog
 
 from orders.adapters import MessagePublisher
-from orders.commands import CreateOrderCommand
+from orders.commands import ApproveOrderCommand, CreateOrderCommand
 from orders.domain import Order
 from orders.responses import CreateOrderResponse
 
@@ -17,3 +17,7 @@ async def create_order(cmd: CreateOrderCommand, publisher: MessagePublisher) -> 
     await publisher.publish(event, topic="order--created")
     logger.info("order_created", order_id=order.order_id, customer_id=order.customer_id)
     return CreateOrderResponse.from_order(order)
+
+
+async def approve_order(cmd: ApproveOrderCommand) -> None:
+    logger.info("order_approved", order_id=cmd.order_id)

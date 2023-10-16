@@ -7,7 +7,7 @@ from typing import Protocol
 from google.protobuf.message import Message
 from stockholm import Money
 
-from proto.order_created.v1 import order_created_pb2
+from orders import proto
 
 
 class Event(Protocol):
@@ -20,8 +20,8 @@ class Event(Protocol):
         ...
 
 
-@dataclass()
-class OrderCreatedEvent(Event):
+@dataclass
+class OrderCreatedEvent:
     event_id: uuid.UUID
     correlation_id: uuid.UUID
     order_id: uuid.UUID
@@ -29,8 +29,8 @@ class OrderCreatedEvent(Event):
     order_total: Decimal
     created_at: datetime.datetime
 
-    def to_proto(self) -> order_created_pb2.OrderCreated:
-        return order_created_pb2.OrderCreated(
+    def to_proto(self) -> proto.OrderCreated:
+        return proto.OrderCreated(
             event_id=str(self.event_id),
             correlation_id=str(self.correlation_id),
             customer_id=str(self.customer_id),

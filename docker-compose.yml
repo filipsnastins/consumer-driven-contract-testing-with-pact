@@ -1,6 +1,7 @@
 version: '3.8'
 
 services:
+  # Example applications
   orders:
     build:
       target: development
@@ -9,6 +10,7 @@ services:
     volumes:
       - ./src:/app/src
     command: ['tomodachi', 'run', 'src/orders/app.py']
+    restart: always
     environment:
       ENVIRONMENT: development
       AWS_REGION: us-east-1
@@ -30,3 +32,40 @@ services:
       AWS_ACCESS_KEY_ID: testing
       AWS_SECRET_ACCESS_KEY: testing
       DYNAMO_ENDPOINT: http://localstack:4566
+
+  # Pact
+  postgres:
+    image: postgres
+    ports:
+      - 5432:5432
+    healthcheck:
+      test: psql postgres -U postgres --command 'SELECT 1'
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+  broker:
+    image: pactfoundation/pact-broker:latest-multi
+    depends_on:
+      - postgres
+    ports:
+      - 9292:9292
+    restart: always
+    environment:
+      PACT_BROKER_ALLOW_PUBLIC_READ: 'true'
+      PACT_BROKER_BASIC_AUTH_USERNAME: pactbroker
+      PACT_BROKER_BASIC_AUTH_PASSWORD: pactbroker
+      PACT_BROKER_DATABASE_URL: postgres://postgres:postgres@postgres/postgres
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'curl',
+          '--silent',
+          '--show-error',
+          '--fail',
+          'http://pactbroker:pactbroker@localhost:9292/diagnostic/status/heartbeat',
+        ]
+      interval: 1s
+      timeout: 2s
+      retries: 5

@@ -1,12 +1,11 @@
 syntax = "proto3";
 
-package order_created.v1;
+package customers.customer_credit_reserved.v1;
 
-message OrderCreated {
+message CustomerCreditReserved {
     string event_id = 1;
     string correlation_id = 2;
     string customer_id = 3;
     string order_id = 4;
-    int64 order_total = 5;
     string created_at = 6;
 }

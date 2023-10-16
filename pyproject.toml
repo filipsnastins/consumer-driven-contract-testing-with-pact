@@ -37,11 +37,13 @@ flake8-warnings = ">=0.4.0"
 isort = ">=5.12.0"
 mypy = ">=1.4.1"
 mypy-protobuf = ">=3.5.0"
+pact-python = "^2.0.1"
 pre-commit = ">=3.3.3"
 pylint = ">=2.17.4"
 pytest = ">=7.4.0"
 pytest-asyncio = ">=0.21.1"
 pytest-cov = ">=4.1.0"
+pytest-env = "^1.0.1"
 pytest-mock = ">=3.11.1"
 ruff = ">=0.0.292"
 types-protobuf = "^4.24.0.2"
@@ -140,4 +142,7 @@ env = [
     "AWS_SECRET_ACCESS_KEY=testing",
     "AWS_SECURITY_TOKEN=testing",
     "AWS_SESSION_TOKEN=testing",
+    # Service configuration
+    "ENVIRONMENT=autotest",
+    "AWS_REGION=us-east-1",
 ]
