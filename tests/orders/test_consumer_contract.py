@@ -12,7 +12,7 @@ from orders.app import Service
 
 @pytest.fixture()
 def pact() -> MessagePact:
-    return MessageConsumer("service-orders", version="0.0.1").has_pact_with(
+    return MessageConsumer("service-orders", version="0.0.2").has_pact_with(
         Provider("service-customers"),
         publish_to_broker=True,
         broker_base_url="http://localhost:9292",
@@ -32,11 +32,9 @@ async def service() -> Service:
 @pytest.mark.asyncio()
 async def test_customer_credit_reserved(pact: MessagePact, service: Service) -> None:
     expected_event = {
-        "event_id": Term(Format.Regexes.uuid.value, "be16b759-b0a7-49b3-b754-bbf4596ff092"),
         "correlation_id": Term(Format.Regexes.uuid.value, "58b587a2-860c-4c4a-a9af-70457ffae596"),
         "customer_id": Term(Format.Regexes.uuid.value, "1e5df855-a757-4aa5-a55f-2ddf6930b250"),
         "order_id": Term(Format.Regexes.uuid.value, "f408cf27-8c53-486e-89f6-f0b45355b3ed"),
-        "created_at": Term(Format.Regexes.iso_8601_datetime_ms.value, "2023-10-16T13:48:39.917914+00:00"),
     }
     (
         pact.given("Customer credit is reserved for created order")
