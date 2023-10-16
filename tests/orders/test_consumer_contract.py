@@ -2,11 +2,12 @@ import uuid
 from typing import cast
 
 import pytest
+import pytest_asyncio
 from pact import Format, MessageConsumer, MessagePact, Provider, Term
 from pact.matchers import get_generated_values
 
 from orders import proto
-from orders.app import ServiceOrders
+from orders.app import Service
 
 
 @pytest.fixture()
@@ -21,13 +22,15 @@ def pact() -> MessagePact:
     )
 
 
-@pytest.fixture()
-def service() -> ServiceOrders:
-    return ServiceOrders()
+@pytest_asyncio.fixture()
+async def service() -> Service:
+    s = Service()
+    await s._start_service()
+    return s
 
 
 @pytest.mark.asyncio()
-async def test_customer_credit_reserved(pact: MessagePact, service: ServiceOrders) -> None:
+async def test_customer_credit_reserved(pact: MessagePact, service: Service) -> None:
     expected_event = {
         "event_id": Term(Format.Regexes.uuid.value, "be16b759-b0a7-49b3-b754-bbf4596ff092"),
         "correlation_id": Term(Format.Regexes.uuid.value, "58b587a2-860c-4c4a-a9af-70457ffae596"),

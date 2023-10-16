@@ -21,7 +21,7 @@ class CreateOrderResponse:
             order_id=order.order_id,
             customer_id=order.customer_id,
             order_total=order.order_total,
-            created_at=order.created_at,
+            created_at=datetime.datetime.now().replace(tzinfo=datetime.UTC),
         )
 
     def to_dict(self) -> dict[str, str | int]:
