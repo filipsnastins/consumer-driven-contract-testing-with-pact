@@ -1,0 +1,8 @@
+version: v1beta1
+plugins:
+  - name: buf-lint
+    out: .
+  - name: python
+    out: .
+  - name: mypy
+    out: .

@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  orders:
+    build:
+      target: development
+    ports:
+      - 9702:9700
+    volumes:
+      - ./src:/app/src
+    command: ['tomodachi', 'run', 'src/orders/app.py']
+    environment:
+      ENVIRONMENT: development
+      AWS_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: testing
+      AWS_SECRET_ACCESS_KEY: testing
+      AWS_ENDPOINT_URL: http://localstack:4566
+  localstack:
+    image: localstack/localstack:2.2.0
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - 4566:4566
+  dynamodb-admin:
+    image: aaronshaf/dynamodb-admin:4.6.1
+    ports:
+      - 8001:8001
+    environment:
+      AWS_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: testing
+      AWS_SECRET_ACCESS_KEY: testing
+      DYNAMO_ENDPOINT: http://localstack:4566
