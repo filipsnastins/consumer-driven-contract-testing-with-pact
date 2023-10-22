@@ -4,5 +4,5 @@
 - [x] Test service-customers (consumer) --> service-orders (provider)
 
 - [x] Test with AWS SNS SQS + Protobuf (asynchronous messages)
+- [x] Test REST API
 - [ ] Test GraphQL
-- [ ] Test REST API

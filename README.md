@@ -15,7 +15,7 @@ buf generate .
 docker compose up
 ```
 
-- Pact Broker URL: <http://localhost:9292>
+- Pact Broker URL: <https://filipsnastins.pactflow.io>
 
 - Create order
 
@@ -23,5 +23,5 @@ docker compose up
 curl -X POST --header "Content-Type: application/json" -d '{
   "customer_id": "97c05e79-5902-451f-b96e-f06c8fc3ed68",
   "order_total": 12399
-}' http://localhost:9702/orders
+}' http://localhost:9702/order
 ```

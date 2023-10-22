@@ -24,6 +24,16 @@ class Service(TomodachiServiceBase):
             },
         )
 
+    @tomodachi.http("POST", r"/")
+    async def generic_handler(self, request: web.Request, correlation_id: uuid.UUID) -> web.Response:
+        data = {
+            "order_id": "1646163f-6fdc-4427-b81f-e1289e5f9dcd",
+            "customer_id": "97c05e79-5902-451f-b96e-f06c8fc3ed68",
+            "order_total": 12399,
+            "created_at": "2023-10-22T13:04:47.249167+00:00",
+        }
+        return web.json_response(data=data)
+
     @tomodachi.http("POST", r"/order")
     async def create_order_handler(self, request: web.Request, correlation_id: uuid.UUID) -> web.Response:
         body = await request.json()

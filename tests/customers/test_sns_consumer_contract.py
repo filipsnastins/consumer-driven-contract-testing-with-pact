@@ -13,8 +13,8 @@ from tests.pact_helpers import create_proto_from_pact
 
 @pytest.fixture()
 def pact() -> MessagePact:
-    return MessageConsumer("service-customers", version="0.0.1").has_pact_with(
-        Provider("service-orders"),
+    return MessageConsumer("service-customers--sns", version="0.0.1").has_pact_with(
+        Provider("service-orders--sns"),
         publish_to_broker=True,
         broker_base_url="http://localhost:9292",
         broker_username="pactbroker",

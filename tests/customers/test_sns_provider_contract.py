@@ -42,8 +42,8 @@ def test_verify_service_orders_consumer(event_loop: AbstractEventLoop) -> None:
                 customer_credit_reserved_message_provider()
             ),
         },
-        provider="service-customers",
-        consumer="service-orders",
+        provider="service-customers--sns",
+        consumer="service-orders--sns",
         pact_dir="pacts",
     )
 

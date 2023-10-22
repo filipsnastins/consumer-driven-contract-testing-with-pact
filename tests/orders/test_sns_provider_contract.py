@@ -39,8 +39,8 @@ def test_verify_service_customers_consumer(event_loop: AbstractEventLoop) -> Non
         message_providers={
             "New order is created": lambda: event_loop.run_until_complete(order_created_message_provider()),
         },
-        provider="service-orders",
-        consumer="service-customers",
+        provider="service-orders--sns",
+        consumer="service-customers--sns",
         pact_dir="pacts",
     )
 

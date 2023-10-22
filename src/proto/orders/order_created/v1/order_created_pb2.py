@@ -12,7 +12,6 @@ from google.protobuf import symbol_database as _symbol_database
 _sym_db = _symbol_database.Default()
 
 
-from proto.google.type import money_pb2 as google_dot_type_dot_money__pb2
 
 
 DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(
