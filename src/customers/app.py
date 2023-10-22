@@ -36,6 +36,7 @@ class Service(TomodachiServiceBase):
             correlation_id=correlation_id,
             customer_id=uuid.UUID(data.customer_id),
             order_id=uuid.UUID(data.order_id),
-            order_total=Money.from_sub_units(data.order_total).as_decimal(),
+            order_total=Money.from_proto(data.order_total).as_decimal(),
         )
+        print(cmd)
         await use_cases.reserve_customer_credit(cmd, publisher=self._publisher)

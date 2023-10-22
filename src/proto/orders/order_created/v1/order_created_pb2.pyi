@@ -5,6 +5,7 @@ isort:skip_file
 import builtins
 import google.protobuf.descriptor
 import google.protobuf.message
+import google.type.money_pb2
 import sys
 
 if sys.version_info >= (3, 8):
@@ -28,7 +29,8 @@ class OrderCreated(google.protobuf.message.Message):
     correlation_id: builtins.str
     customer_id: builtins.str
     order_id: builtins.str
-    order_total: builtins.int
+    @property
+    def order_total(self) -> google.type.money_pb2.Money: ...
     created_at: builtins.str
     def __init__(
         self,
@@ -37,9 +39,10 @@ class OrderCreated(google.protobuf.message.Message):
         correlation_id: builtins.str = ...,
         customer_id: builtins.str = ...,
         order_id: builtins.str = ...,
-        order_total: builtins.int = ...,
+        order_total: google.type.money_pb2.Money | None = ...,
         created_at: builtins.str = ...,
     ) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["order_total", b"order_total"]) -> builtins.bool: ...
     def ClearField(self, field_name: typing_extensions.Literal["correlation_id", b"correlation_id", "created_at", b"created_at", "customer_id", b"customer_id", "event_id", b"event_id", "order_id", b"order_id", "order_total", b"order_total"]) -> None: ...
 
 global___OrderCreated = OrderCreated
