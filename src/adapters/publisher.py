@@ -1,3 +1,5 @@
+from typing import Protocol
+
 import structlog
 import tomodachi
 from google.protobuf.message import Message
@@ -6,7 +8,12 @@ from tomodachi.envelope.protobuf_base import ProtobufBase
 logger: structlog.stdlib.BoundLogger = structlog.get_logger()
 
 
-class MessagePublisher:
+class MessagePublisher(Protocol):
+    async def publish(self, data: Message, topic: str) -> None:
+        ...
+
+
+class AWSSNSSQSMessagePublisher:
     def __init__(self, service: tomodachi.Service) -> None:
         self._service = service
 

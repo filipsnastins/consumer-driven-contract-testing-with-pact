@@ -2,7 +2,7 @@ from decimal import Decimal
 
 import structlog
 
-from orders.adapters import MessagePublisher
+from adapters.publisher import MessagePublisher
 from orders.commands import ApproveOrderCommand, CreateOrderCommand
 from orders.domain import Order, OrderState
 from orders.responses import CreateOrderResponse

@@ -5,7 +5,9 @@ from aiohttp import web
 from stockholm import Money
 from tomodachi.envelope.protobuf_base import ProtobufBase
 
-from orders import adapters, proto, use_cases
+from adapters import proto
+from adapters.publisher import AWSSNSSQSMessagePublisher
+from orders import use_cases
 from orders.commands import ApproveOrderCommand, CreateOrderCommand
 from tomodachi_bootstrap import TomodachiServiceBase
 
@@ -14,7 +16,7 @@ class Service(TomodachiServiceBase):
     name = "service--orders"
 
     async def _start_service(self) -> None:
-        self._publisher = adapters.MessagePublisher(self)
+        self._publisher = AWSSNSSQSMessagePublisher(self)
 
     @tomodachi.http("POST", r"/order")
     async def create_order_handler(self, request: web.Request, correlation_id: uuid.UUID) -> web.Response:

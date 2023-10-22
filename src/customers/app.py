@@ -4,7 +4,9 @@ import tomodachi
 from stockholm import Money
 from tomodachi.envelope.protobuf_base import ProtobufBase
 
-from customers import adapters, proto, use_cases
+from adapters import proto
+from adapters.publisher import AWSSNSSQSMessagePublisher
+from customers import use_cases
 from customers.commands import ReserveCustomerCreditCommand
 from tomodachi_bootstrap import TomodachiServiceBase
 
@@ -13,7 +15,7 @@ class Service(TomodachiServiceBase):
     name = "service--customers"
 
     async def _start_service(self) -> None:
-        self._publisher = adapters.MessagePublisher(self)
+        self._publisher = AWSSNSSQSMessagePublisher(self)
 
     @tomodachi.aws_sns_sqs(
         topic="order--created",

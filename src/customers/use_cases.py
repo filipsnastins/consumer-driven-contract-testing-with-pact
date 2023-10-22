@@ -1,6 +1,6 @@
 import structlog
 
-from customers.adapters import MessagePublisher
+from adapters.publisher import MessagePublisher
 from customers.commands import ReserveCustomerCreditCommand
 from customers.domain import Customer
 

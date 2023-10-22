@@ -7,7 +7,7 @@ from typing import Protocol
 from google.protobuf.message import Message
 from stockholm import Money
 
-from orders import proto
+from adapters import proto
 
 
 class Event(Protocol):

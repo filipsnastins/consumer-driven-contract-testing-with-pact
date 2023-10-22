@@ -5,7 +5,7 @@ from typing import Protocol
 
 from google.protobuf.message import Message
 
-from customers import proto
+from adapters import proto
 
 
 class Event(Protocol):
