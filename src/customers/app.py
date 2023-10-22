@@ -8,6 +8,7 @@ from adapters import proto
 from adapters.publisher import AWSSNSSQSMessagePublisher
 from customers import use_cases
 from customers.commands import ReserveCustomerCreditCommand
+from customers.events import CustomerCreditReservedEvent
 from tomodachi_bootstrap import TomodachiServiceBase
 
 
@@ -15,7 +16,12 @@ class Service(TomodachiServiceBase):
     name = "service--customers"
 
     async def _start_service(self) -> None:
-        self._publisher = AWSSNSSQSMessagePublisher(self)
+        self._publisher = AWSSNSSQSMessagePublisher(
+            service=self,
+            message_topic_map={
+                CustomerCreditReservedEvent: "customer--credit-reserved",
+            },
+        )
 
     @tomodachi.aws_sns_sqs(
         topic="order--created",

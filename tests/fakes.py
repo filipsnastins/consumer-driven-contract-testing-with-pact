@@ -1,11 +1,9 @@
-from google.protobuf.message import Message
-
-from adapters.publisher import MessagePublisher
+from adapters.publisher import Message, MessagePublisher
 
 
 class InMemoryMessagePublisher(MessagePublisher):
     def __init__(self, messages: list[Message]) -> None:
         self.messages = messages
 
-    async def publish(self, data: Message, topic: str) -> None:
-        self.messages.append(data)
+    async def publish(self, message: Message) -> None:
+        self.messages.append(message)

@@ -31,18 +31,17 @@ async def customer_credit_reserved_message_provider() -> dict:
     await use_cases.reserve_customer_credit(cmd, publisher=publisher)
 
     [message] = publisher.messages
-    assert isinstance(message, proto.CustomerCreditReserved)
-    return proto_to_dict(message)
+    assert isinstance(message.to_proto(), proto.CustomerCreditReserved)
+    return proto_to_dict(message.to_proto())
 
 
 def test_verify_service_orders_consumer(event_loop: AbstractEventLoop) -> None:
-    message_providers = {
-        "Customer credit is reserved for created order": lambda: event_loop.run_until_complete(
-            customer_credit_reserved_message_provider()
-        ),
-    }
     provider = MessageProvider(
-        message_providers=message_providers,
+        message_providers={
+            "Customer credit is reserved for created order": lambda: event_loop.run_until_complete(
+                customer_credit_reserved_message_provider()
+            ),
+        },
         provider="service-customers",
         consumer="service-orders",
         pact_dir="pacts",

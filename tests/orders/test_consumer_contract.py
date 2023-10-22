@@ -39,7 +39,6 @@ async def test_customer_credit_reserved(pact: MessagePact, service: Service) -> 
         pact.given("Customer credit is reserved for created order")
         .expects_to_receive("CustomerCreditReserved event")
         .with_content(expected_event)
-        .with_metadata({"topic": "customer--credit-reserved"})
     )
     data = create_proto_from_pact(proto.CustomerCreditReserved, expected_event)
 

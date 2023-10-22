@@ -3,7 +3,7 @@ import uuid
 from dataclasses import dataclass
 from typing import Protocol
 
-from google.protobuf.message import Message
+from google.protobuf.message import Message as ProtoMessage
 
 from adapters import proto
 
@@ -14,7 +14,7 @@ class Event(Protocol):
     order_id: uuid.UUID
     created_at: datetime.datetime
 
-    def to_proto(self) -> Message:
+    def to_proto(self) -> ProtoMessage:
         ...
 
 

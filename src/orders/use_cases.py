@@ -16,7 +16,7 @@ async def create_order(cmd: CreateOrderCommand, publisher: MessagePublisher) -> 
         customer_id=cmd.customer_id,
         order_total=cmd.order_total,
     )
-    await publisher.publish(event.to_proto(), topic="order--created")
+    await publisher.publish(event)
     logger.info("order_created", order_id=order.order_id, customer_id=order.customer_id)
     return CreateOrderResponse.from_order(order)
 
