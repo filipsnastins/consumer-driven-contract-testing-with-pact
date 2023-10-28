@@ -63,10 +63,44 @@ async def test_create_order(pact: Pact, orders_client: OrdersClient) -> None:
 
     with pact:
         # Act
-        order = await orders_client.create_order(
+        order = await orders_client.create(
             customer_id=uuid.UUID("f408cf27-8c53-486e-89f6-f0b45355b3ed"),
             order_total=Decimal("100.99"),
         )
+
+        # Assert
+        assert isinstance(order, Order)
+        assert order == Order(
+            id=uuid.UUID("f408cf27-8c53-486e-89f6-f0b45355b3ed"),
+            customer_id=uuid.UUID("d3100f4f-c8a7-4207-a5e2-40aa122b4b33"),
+            order_total=Decimal("100.99"),
+            state=OrderState.CREATED,
+        )
+        pact.verify()
+
+
+@pytest.mark.asyncio()
+async def test_get_order(pact: Pact, orders_client: OrdersClient) -> None:
+    # Arrange
+    expected = {
+        "id": Term(Format.Regexes.uuid.value, "f408cf27-8c53-486e-89f6-f0b45355b3ed"),
+        "customer_id": Like("d3100f4f-c8a7-4207-a5e2-40aa122b4b33"),
+        "order_total": Like(10099),
+        "state": "CREATED",
+    }
+    (
+        pact.given("An order exists")
+        .upon_receiving("A request to get an order")
+        .with_request(
+            method="GET",
+            path="/order/f408cf27-8c53-486e-89f6-f0b45355b3ed",
+        )
+        .will_respond_with(status=200, body=expected)
+    )
+
+    with pact:
+        # Act
+        order = await orders_client.get(uuid.UUID("f408cf27-8c53-486e-89f6-f0b45355b3ed"))
 
         # Assert
         assert isinstance(order, Order)
