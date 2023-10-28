@@ -7,7 +7,7 @@ from pact import Consumer, Format, Like, Pact, Provider, Term
 from tomodachi_testcontainers.utils import get_available_port
 from yarl import URL
 
-from sdk.orders import OrderCreatedResponse, OrdersClient
+from sdk.orders import Order, OrdersClient, OrderState
 
 
 @pytest.fixture(scope="module")
@@ -41,11 +41,13 @@ def orders_client(mock_url: URL) -> OrdersClient:
 
 @pytest.mark.asyncio()
 async def test_create_order(pact: Pact, orders_client: OrdersClient) -> None:
+    # Arrange
     expected = {
-        "order_id": Term(Format.Regexes.uuid.value, "f408cf27-8c53-486e-89f6-f0b45355b3ed"),
+        "id": Term(Format.Regexes.uuid.value, "f408cf27-8c53-486e-89f6-f0b45355b3ed"),
+        "customer_id": Like("d3100f4f-c8a7-4207-a5e2-40aa122b4b33"),
         "order_total": Like(10099),
+        "state": "CREATED",
     }
-
     (
         pact.upon_receiving("A request to create a new order")
         .with_request(
@@ -60,15 +62,18 @@ async def test_create_order(pact: Pact, orders_client: OrdersClient) -> None:
     )
 
     with pact:
+        # Act
         order = await orders_client.create_order(
             customer_id=uuid.UUID("f408cf27-8c53-486e-89f6-f0b45355b3ed"),
             order_total=Decimal("100.99"),
         )
 
-        assert isinstance(order, OrderCreatedResponse)
-        assert order == OrderCreatedResponse(
-            order_id=uuid.UUID("f408cf27-8c53-486e-89f6-f0b45355b3ed"),
+        # Assert
+        assert isinstance(order, Order)
+        assert order == Order(
+            id=uuid.UUID("f408cf27-8c53-486e-89f6-f0b45355b3ed"),
+            customer_id=uuid.UUID("d3100f4f-c8a7-4207-a5e2-40aa122b4b33"),
             order_total=Decimal("100.99"),
+            state=OrderState.CREATED,
         )
-
         pact.verify()

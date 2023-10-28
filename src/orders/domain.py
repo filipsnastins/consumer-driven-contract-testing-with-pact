@@ -3,6 +3,8 @@ import uuid
 from decimal import Decimal
 from enum import Enum
 
+from stockholm import Money
+
 from orders.events import OrderCreatedEvent
 
 
@@ -57,6 +59,6 @@ class Order:
         return {
             "id": str(self.id),
             "customer_id": str(self.customer_id),
-            "order_total": str(self.order_total),
+            "order_total": int(Money(self.order_total).to_sub_units()),
             "state": self.state.value,
         }

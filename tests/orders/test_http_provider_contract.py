@@ -25,6 +25,7 @@ def service_orders_container(
             edge_port=get_available_port(),
         )
         .with_env("ENVIRONMENT", "autotest")
+        .with_env("DYNAMODB_TABLE_NAME", "autotest-orders")
         .with_env("AWS_REGION", "us-east-1")
         .with_env("AWS_ACCESS_KEY_ID", "testing")
         .with_env("AWS_SECRET_ACCESS_KEY", "testing")

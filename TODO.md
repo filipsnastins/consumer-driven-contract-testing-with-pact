@@ -4,4 +4,4 @@
 
 - [ ] Working with provider states with REST and GraphQL
 
-- [x] Add persistence layer to the services
+- [ ] Do not inherit from Protocol?
