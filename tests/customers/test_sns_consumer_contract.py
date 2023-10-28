@@ -26,7 +26,7 @@ def pact() -> MessagePact:
 
 
 @pytest.fixture()
-def repo() -> InMemoryCustomerRepository:
+def repository() -> InMemoryCustomerRepository:
     return InMemoryCustomerRepository([])
 
 
@@ -37,20 +37,20 @@ def publisher() -> InMemoryMessagePublisher:
 
 @pytest_asyncio.fixture()
 async def service(
-    mocker: MockerFixture, repo: InMemoryCustomerRepository, publisher: InMemoryMessagePublisher
+    mocker: MockerFixture, repository: InMemoryCustomerRepository, publisher: InMemoryMessagePublisher
 ) -> Service:
     s = Service()
-    mocker.patch.object(s, "_repo", repo)
+    mocker.patch.object(s, "_repository", repository)
     mocker.patch.object(s, "_publisher", publisher)
     return s
 
 
 @pytest.mark.asyncio()
 async def test_consume_order_created_event(
-    pact: MessagePact, mocker: MockerFixture, service: Service, repo: InMemoryCustomerRepository
+    pact: MessagePact, mocker: MockerFixture, service: Service, repository: InMemoryCustomerRepository
 ) -> None:
     mocker.patch("customers.domain.uuid.uuid4", return_value=uuid.UUID("d3100f4f-c8a7-4207-a5e2-40aa122b4b33"))
-    customer = await use_cases.create_customer(CreateCustomerCommand(name="John Doe"), repo)
+    customer = await use_cases.create_customer(CreateCustomerCommand(name="John Doe"), repository)
 
     expected_message = {
         "correlation_id": Term(Format.Regexes.uuid.value, "23b2c005-a914-41ab-92d7-d8d4d8e98020"),

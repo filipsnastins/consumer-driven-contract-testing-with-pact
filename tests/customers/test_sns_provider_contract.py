@@ -20,10 +20,10 @@ DEFAULT_OPTS = {
 
 
 async def customer_credit_reserved_message_provider(mocker: MockerFixture) -> dict:
-    repo = InMemoryCustomerRepository([])
+    repository = InMemoryCustomerRepository([])
     publisher = InMemoryMessagePublisher([])
     mocker.patch("customers.domain.uuid.uuid4", return_value=uuid.UUID("1e5df855-a757-4aa5-a55f-2ddf6930b250"))
-    customer = await use_cases.create_customer(CreateCustomerCommand(name="John Doe"), repo)
+    customer = await use_cases.create_customer(CreateCustomerCommand(name="John Doe"), repository)
 
     await use_cases.reserve_customer_credit(
         ReserveCustomerCreditCommand(
@@ -31,7 +31,7 @@ async def customer_credit_reserved_message_provider(mocker: MockerFixture) -> di
             order_id=uuid.UUID("f408cf27-8c53-486e-89f6-f0b45355b3ed"),
             order_total=Decimal("123.99"),
         ),
-        repo,
+        repository,
         publisher,
     )
 

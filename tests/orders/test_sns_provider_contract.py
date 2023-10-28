@@ -19,7 +19,7 @@ DEFAULT_OPTS = {
 
 
 async def order_created_message_provider() -> dict:
-    repo = InMemoryOrderRepository([])
+    repository = InMemoryOrderRepository([])
     publisher = InMemoryMessagePublisher([])
 
     await use_cases.create_order(
@@ -28,7 +28,7 @@ async def order_created_message_provider() -> dict:
             customer_id=uuid.UUID("1e5df855-a757-4aa5-a55f-2ddf6930b250"),
             order_total=Decimal("123.99"),
         ),
-        repo,
+        repository,
         publisher,
     )
 

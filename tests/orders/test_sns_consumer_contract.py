@@ -27,7 +27,7 @@ def pact() -> MessagePact:
 
 
 @pytest.fixture()
-def repo() -> InMemoryOrderRepository:
+def repository() -> InMemoryOrderRepository:
     return InMemoryOrderRepository([])
 
 
@@ -37,9 +37,11 @@ def publisher() -> InMemoryMessagePublisher:
 
 
 @pytest_asyncio.fixture()
-async def service(mocker: MockerFixture, repo: InMemoryOrderRepository, publisher: InMemoryMessagePublisher) -> Service:
+async def service(
+    mocker: MockerFixture, repository: InMemoryOrderRepository, publisher: InMemoryMessagePublisher
+) -> Service:
     s = Service()
-    mocker.patch.object(s, "_repo", repo)
+    mocker.patch.object(s, "_repository", repository)
     mocker.patch.object(s, "_publisher", publisher)
     return s
 
@@ -49,7 +51,7 @@ async def test_customer_credit_reserved(
     pact: MessagePact,
     mocker: MockerFixture,
     service: Service,
-    repo: InMemoryOrderRepository,
+    repository: InMemoryOrderRepository,
     publisher: InMemoryMessagePublisher,
 ) -> None:
     mocker.patch("orders.domain.uuid.uuid4", return_value=uuid.UUID("f408cf27-8c53-486e-89f6-f0b45355b3ed"))
@@ -59,7 +61,7 @@ async def test_customer_credit_reserved(
             customer_id=uuid.UUID("1e5df855-a757-4aa5-a55f-2ddf6930b250"),
             order_total=Decimal("123.99"),
         ),
-        repo,
+        repository,
         publisher,
     )
 
