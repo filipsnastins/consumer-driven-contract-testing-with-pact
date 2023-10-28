@@ -9,4 +9,4 @@ class Settings(TomodachiBaseSettings):
 
 @lru_cache
 def get_settings() -> Settings:
-    return Settings()  # type: ignore
+    return Settings.model_validate({})

@@ -16,7 +16,7 @@ from orders.repository import DynamoDBOrderRepository
 from tomodachi_bootstrap import TomodachiServiceBase
 
 
-class Service(TomodachiServiceBase):
+class ServiceOrders(TomodachiServiceBase):
     name = "service--orders"
 
     def __init__(self) -> None:

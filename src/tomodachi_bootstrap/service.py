@@ -1,4 +1,7 @@
+import uuid
+
 import tomodachi
+from aiohttp import web
 from pydantic_settings import BaseSettings
 
 from tomodachi_bootstrap.logger import configure_structlog
@@ -52,3 +55,7 @@ class TomodachiServiceBase(tomodachi.Service):
         )
         self.is_dev_env = settings.is_dev_env
         configure_structlog(renderer="dev" if self.is_dev_env else "json")
+
+    @tomodachi.http("GET", r"/health/?", ignore_logging=[200])
+    async def healthcheck(self, request: web.Request, correlation_id: uuid.UUID) -> web.Response:
+        return web.json_response({"status": "ok"}, status=200)

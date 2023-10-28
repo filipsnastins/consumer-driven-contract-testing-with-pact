@@ -7,8 +7,8 @@ from pytest_mock import MockerFixture
 
 from adapters import proto
 from customers import use_cases
-from customers.app import Service
 from customers.commands import CreateCustomerCommand
+from customers.tomodachi_app import ServiceCustomers
 from tests.fakes import InMemoryCustomerRepository, InMemoryMessagePublisher
 from tests.pact_helpers import create_proto_from_pact
 
@@ -38,16 +38,16 @@ def publisher() -> InMemoryMessagePublisher:
 @pytest_asyncio.fixture()
 async def service(
     mocker: MockerFixture, repository: InMemoryCustomerRepository, publisher: InMemoryMessagePublisher
-) -> Service:
-    s = Service()
-    mocker.patch.object(s, "_repository", repository)
-    mocker.patch.object(s, "_publisher", publisher)
-    return s
+) -> ServiceCustomers:
+    service = ServiceCustomers()
+    mocker.patch.object(service, "_repository", repository)
+    mocker.patch.object(service, "_publisher", publisher)
+    return service
 
 
 @pytest.mark.asyncio()
 async def test_consume_order_created_event(
-    pact: MessagePact, mocker: MockerFixture, service: Service, repository: InMemoryCustomerRepository
+    pact: MessagePact, mocker: MockerFixture, service: ServiceCustomers, repository: InMemoryCustomerRepository
 ) -> None:
     mocker.patch("customers.domain.uuid.uuid4", return_value=uuid.UUID("d3100f4f-c8a7-4207-a5e2-40aa122b4b33"))
     customer = await use_cases.create_customer(CreateCustomerCommand(name="John Doe"), repository)

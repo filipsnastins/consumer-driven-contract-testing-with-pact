@@ -6,15 +6,19 @@ authors = ["Filips Nastins <nastinsfilips@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.11"
+fastapi = "^0.104.0"
 httpx = "^0.23.3"
 protobuf = "^4.24.4"
 pydantic = "^2.4.2"
 pydantic-settings = "^2.0.3"
+sqlalchemy = { extras = ["postgresql-asyncpg"], version = "^2.0.22" }
 stockholm = "^0.5.6"
+strawberry-graphql = { extras = ["fastapi"], version = "^0.211.1" }
 structlog = "^23.2.0"
 tomodachi = "^0.26.1"
 types-aiobotocore-dynamodb = "^2.7.0"
-uvloop = "^0.18.0"
+uvicorn = "^0.23.2"
+uvloop = "^0.19.0"
 
 [tool.poetry.group.dev.dependencies]
 autoflake = ">=2.2.1"

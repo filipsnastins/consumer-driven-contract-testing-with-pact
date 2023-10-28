@@ -15,7 +15,7 @@ from customers.repository import DynamoDBCustomerRepository
 from tomodachi_bootstrap import TomodachiServiceBase
 
 
-class Service(TomodachiServiceBase):
+class ServiceCustomers(TomodachiServiceBase):
     name = "service--customers"
 
     def __init__(self) -> None:

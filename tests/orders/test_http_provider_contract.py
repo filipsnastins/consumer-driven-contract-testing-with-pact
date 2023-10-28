@@ -30,7 +30,7 @@ def service_orders_container(
         .with_env("AWS_ACCESS_KEY_ID", "testing")
         .with_env("AWS_SECRET_ACCESS_KEY", "testing")
         .with_env("AWS_ENDPOINT_URL", moto_container.get_internal_url())
-        .with_command("tomodachi run src/orders/app.py --production")
+        .with_command("tomodachi run src/orders/tomodachi_app.py --production")
     ) as container:
         yield cast(TomodachiContainer, container)
 

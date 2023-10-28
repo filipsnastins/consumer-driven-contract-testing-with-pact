@@ -8,8 +8,8 @@ from pytest_mock import MockerFixture
 
 from adapters import proto
 from orders import use_cases
-from orders.app import Service
 from orders.commands import CreateOrderCommand
+from orders.tomodachi_app import ServiceOrders
 from tests.fakes import InMemoryMessagePublisher, InMemoryOrderRepository
 from tests.pact_helpers import create_proto_from_pact
 
@@ -39,18 +39,18 @@ def publisher() -> InMemoryMessagePublisher:
 @pytest_asyncio.fixture()
 async def service(
     mocker: MockerFixture, repository: InMemoryOrderRepository, publisher: InMemoryMessagePublisher
-) -> Service:
-    s = Service()
-    mocker.patch.object(s, "_repository", repository)
-    mocker.patch.object(s, "_publisher", publisher)
-    return s
+) -> ServiceOrders:
+    service = ServiceOrders()
+    mocker.patch.object(service, "_repository", repository)
+    mocker.patch.object(service, "_publisher", publisher)
+    return service
 
 
 @pytest.mark.asyncio()
 async def test_customer_credit_reserved(
     pact: MessagePact,
     mocker: MockerFixture,
-    service: Service,
+    service: ServiceOrders,
     repository: InMemoryOrderRepository,
     publisher: InMemoryMessagePublisher,
 ) -> None:
