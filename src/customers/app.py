@@ -26,7 +26,7 @@ class Service(TomodachiServiceBase):
                 CustomerCreditReservedEvent: "customer--credit-reserved",
             },
         )
-        self._repo = DynamoDBCustomerRepository(dynamodb.get_table_name(), clients.get_dynamodb_client)
+        self._repository = DynamoDBCustomerRepository(dynamodb.get_table_name(), clients.get_dynamodb_client)
 
     async def _start_service(self) -> None:
         await dynamodb.create_table()
@@ -35,7 +35,7 @@ class Service(TomodachiServiceBase):
     async def create_customer_handler(self, request: web.Request, correlation_id: uuid.UUID) -> web.Response:
         data = await request.json()
         cmd = CreateCustomerCommand(name=str(data["name"]))
-        customer = await use_cases.create_customer(cmd, self._repo)
+        customer = await use_cases.create_customer(cmd, self._repository)
         return web.json_response(customer.to_dict(), status=200)
 
     @tomodachi.http("GET", r"/customer/(?P<customer_id>[^/]+?)/?")
@@ -43,7 +43,7 @@ class Service(TomodachiServiceBase):
         self, request: web.Request, customer_id: str, correlation_id: uuid.UUID
     ) -> web.Response:
         try:
-            customer = await use_cases.get_customer(uuid.UUID(customer_id), self._repo)
+            customer = await use_cases.get_customer(uuid.UUID(customer_id), self._repository)
             return web.json_response(customer.to_dict(), status=200)
         except CustomerNotFoundError:
             return web.json_response({"error": "CUSTOMER_NOT_FOUND"}, status=404)
@@ -62,4 +62,4 @@ class Service(TomodachiServiceBase):
             order_id=uuid.UUID(data.order_id),
             order_total=Money.from_proto(data.order_total).as_decimal(),
         )
-        await use_cases.reserve_customer_credit(cmd, self._repo, self._publisher)
+        await use_cases.reserve_customer_credit(cmd, self._repository, self._publisher)

@@ -11,12 +11,12 @@ from orders import use_cases
 from orders.commands import ApproveOrderCommand, CreateOrderCommand
 from orders.domain import OrderNotFoundError
 from orders.events import OrderCreatedEvent
-from orders.pact import PactProviderStateService
+from orders.pact import setup_pact_provider_state
 from orders.repository import DynamoDBOrderRepository
 from tomodachi_bootstrap import TomodachiServiceBase
 
 
-class Service(TomodachiServiceBase, PactProviderStateService):
+class Service(TomodachiServiceBase):
     name = "service--orders"
 
     def __init__(self) -> None:
@@ -27,7 +27,7 @@ class Service(TomodachiServiceBase, PactProviderStateService):
                 OrderCreatedEvent: "order--created",
             },
         )
-        self._repo = DynamoDBOrderRepository(dynamodb.get_table_name(), clients.get_dynamodb_client)
+        self._repository = DynamoDBOrderRepository(dynamodb.get_table_name(), clients.get_dynamodb_client)
 
     async def _start_service(self) -> None:
         await dynamodb.create_table()
@@ -40,7 +40,7 @@ class Service(TomodachiServiceBase, PactProviderStateService):
             customer_id=uuid.UUID(body["customer_id"]),
             order_total=Money.from_sub_units(body["order_total"]).as_decimal(),
         )
-        order = await use_cases.create_order(cmd, self._repo, self._publisher)
+        order = await use_cases.create_order(cmd, self._repository, self._publisher)
         return web.json_response(data=order.to_dict())
 
     @tomodachi.http("GET", r"/order/(?P<order_id>[^/]+?)/?")
@@ -48,10 +48,23 @@ class Service(TomodachiServiceBase, PactProviderStateService):
         self, request: web.Request, order_id: str, correlation_id: uuid.UUID
     ) -> web.Response:
         try:
-            order = await use_cases.get_order(uuid.UUID(order_id), self._repo)
+            order = await use_cases.get_order(uuid.UUID(order_id), self._repository)
             return web.json_response(order.to_dict(), status=200)
         except OrderNotFoundError:
             return web.json_response({"error": "ORDER_NOT_FOUND"}, status=404)
+
+    @tomodachi.http("POST", r"/_pact/provider_states")
+    async def setup_pact_provider_state_handler(self, request: web.Request, correlation_id: uuid.UUID) -> web.Response:
+        body = await request.json()
+        await setup_pact_provider_state(
+            consumer=body["consumer"],
+            state=body["state"],
+            states=body["states"],
+            correlation_id=correlation_id,
+            repository=self._repository,
+            publisher=self._publisher,
+        )
+        return web.json_response({})
 
     @tomodachi.aws_sns_sqs(
         topic="customer--credit-reserved",
@@ -68,4 +81,4 @@ class Service(TomodachiServiceBase, PactProviderStateService):
             order_id=uuid.UUID(data.order_id),
             customer_id=uuid.UUID(data.customer_id),
         )
-        await use_cases.approve_order(cmd, self._repo)
+        await use_cases.approve_order(cmd, self._repository)
