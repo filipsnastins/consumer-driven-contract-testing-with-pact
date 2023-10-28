@@ -18,7 +18,7 @@ class CustomerRepository(Protocol):
         ...
 
 
-class DynamoDBCustomerRepository(CustomerRepository):
+class DynamoDBCustomerRepository:
     def __init__(self, table_name: str, client_factory: DynamoDBClientFactory) -> None:
         self._table_name = table_name
         self._client_factory = client_factory

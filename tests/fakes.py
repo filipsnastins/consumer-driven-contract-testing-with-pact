@@ -1,13 +1,11 @@
 import uuid
 
-from adapters.publisher import Message, MessagePublisher
+from adapters.publisher import Message
 from customers.domain import Customer
-from customers.repository import CustomerRepository
 from orders.domain import Order
-from orders.repository import OrderRepository
 
 
-class InMemoryCustomerRepository(CustomerRepository):
+class InMemoryCustomerRepository:
     def __init__(self, customers: list[Customer]) -> None:
         self.customers = {customer.id: customer for customer in customers}
 
@@ -18,7 +16,7 @@ class InMemoryCustomerRepository(CustomerRepository):
         return self.customers.get(customer_id)
 
 
-class InMemoryOrderRepository(OrderRepository):
+class InMemoryOrderRepository:
     def __init__(self, orders: list[Order]) -> None:
         self.orders = {order.id: order for order in orders}
 
@@ -29,7 +27,7 @@ class InMemoryOrderRepository(OrderRepository):
         return self.orders.get(order_id)
 
 
-class InMemoryMessagePublisher(MessagePublisher):
+class InMemoryMessagePublisher:
     def __init__(self, messages: list[Message]) -> None:
         self.messages = messages
 

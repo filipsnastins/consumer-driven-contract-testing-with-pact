@@ -1,5 +1,5 @@
 import uuid
-from asyncio import Protocol
+from typing import Protocol
 
 import structlog
 from stockholm import Money
@@ -18,7 +18,7 @@ class OrderRepository(Protocol):
         ...
 
 
-class DynamoDBOrderRepository(OrderRepository):
+class DynamoDBOrderRepository:
     def __init__(self, table_name: str, client_factory: DynamoDBClientFactory) -> None:
         self._table_name = table_name
         self._client_factory = client_factory
