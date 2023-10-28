@@ -43,6 +43,9 @@ def verifier(service_orders_container: TomodachiContainer) -> Verifier:
     )
 
 
-def test_against_broker(verifier: Verifier) -> None:
-    code, _ = verifier.verify_with_broker(**DEFAULT_OPTS)
+def test_against_broker(verifier: Verifier, service_orders_container: TomodachiContainer) -> None:
+    code, _ = verifier.verify_with_broker(
+        **DEFAULT_OPTS,
+        provider_states_setup_url=f"{service_orders_container.get_external_url()}/_pact/provider_states",
+    )
     assert code == 0

@@ -11,11 +11,12 @@ from orders import use_cases
 from orders.commands import ApproveOrderCommand, CreateOrderCommand
 from orders.domain import OrderNotFoundError
 from orders.events import OrderCreatedEvent
+from orders.pact import PactProviderStateService
 from orders.repository import DynamoDBOrderRepository
 from tomodachi_bootstrap import TomodachiServiceBase
 
 
-class Service(TomodachiServiceBase):
+class Service(TomodachiServiceBase, PactProviderStateService):
     name = "service--orders"
 
     def __init__(self) -> None:

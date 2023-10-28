@@ -7,7 +7,7 @@ from pact import Consumer, Format, Like, Pact, Provider, Term
 from tomodachi_testcontainers.utils import get_available_port
 from yarl import URL
 
-from sdk.orders import Order, OrdersClient, OrderState
+from sdk.orders import Order, OrderNotFoundError, OrdersClient, OrderState
 
 
 @pytest.fixture(scope="module")
@@ -80,6 +80,27 @@ async def test_create_order(pact: Pact, orders_client: OrdersClient) -> None:
 
 
 @pytest.mark.asyncio()
+async def test_get_non_existing_order(pact: Pact, orders_client: OrdersClient) -> None:
+    # Arrange
+    expected = {"error": "ORDER_NOT_FOUND"}
+    (
+        pact.upon_receiving("A request to get non-existing order")
+        .with_request(
+            method="GET",
+            path="/order/02f0a114-273d-4e40-af9e-129f8e3c193d",
+        )
+        .will_respond_with(status=404, body=expected)
+    )
+
+    with pact:
+        # Act & assert
+        with pytest.raises(OrderNotFoundError):
+            await orders_client.get(uuid.UUID("02f0a114-273d-4e40-af9e-129f8e3c193d"))
+
+        pact.verify()
+
+
+@pytest.mark.asyncio()
 async def test_get_order(pact: Pact, orders_client: OrdersClient) -> None:
     # Arrange
     expected = {
@@ -89,8 +110,8 @@ async def test_get_order(pact: Pact, orders_client: OrdersClient) -> None:
         "state": "CREATED",
     }
     (
-        pact.given("An order exists")
-        .upon_receiving("A request to get an order")
+        pact.given("An order f408cf27 exists")
+        .upon_receiving("A request to get an existing order")
         .with_request(
             method="GET",
             path="/order/f408cf27-8c53-486e-89f6-f0b45355b3ed",

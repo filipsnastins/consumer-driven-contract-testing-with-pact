@@ -7,6 +7,10 @@ import httpx
 from stockholm import Money
 
 
+class OrderNotFoundError(Exception):
+    pass
+
+
 class OrderState(Enum):
     CREATED = "CREATED"
     APPROVED = "APPROVED"
@@ -43,6 +47,8 @@ class OrdersClient:
 
     async def get(self, order_id: uuid.UUID) -> Order:
         response = await self._client.get(f"/order/{order_id}")
+        if response.status_code == 404:
+            raise OrderNotFoundError(order_id)
         response.raise_for_status()
         body = response.json()
         return Order(
