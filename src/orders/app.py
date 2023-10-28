@@ -55,6 +55,8 @@ class Service(TomodachiServiceBase):
 
     @tomodachi.http("POST", r"/_pact/provider_states")
     async def setup_pact_provider_state_handler(self, request: web.Request, correlation_id: uuid.UUID) -> web.Response:
+        if not self.is_dev_env:
+            return web.json_response({}, status=403)
         body = await request.json()
         await setup_pact_provider_state(
             consumer=body["consumer"],
