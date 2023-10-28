@@ -1,13 +1,16 @@
 import uuid
+from decimal import Decimal
 
 import pytest
 import pytest_asyncio
-from fakes import InMemoryMessagePublisher
 from pact import Format, MessageConsumer, MessagePact, Provider, Term
 from pytest_mock import MockerFixture
 
 from adapters import proto
+from orders import use_cases
 from orders.app import Service
+from orders.commands import CreateOrderCommand
+from tests.fakes import InMemoryMessagePublisher, InMemoryOrderRepository
 from tests.pact_helpers import create_proto_from_pact
 
 
@@ -23,29 +26,56 @@ def pact() -> MessagePact:
     )
 
 
+@pytest.fixture()
+def repo() -> InMemoryOrderRepository:
+    return InMemoryOrderRepository([])
+
+
+@pytest.fixture()
+def publisher() -> InMemoryMessagePublisher:
+    return InMemoryMessagePublisher([])
+
+
 @pytest_asyncio.fixture()
-async def service(mocker: MockerFixture) -> Service:
+async def service(mocker: MockerFixture, repo: InMemoryOrderRepository, publisher: InMemoryMessagePublisher) -> Service:
     s = Service()
-    await s._start_service()
-    mocker.patch.object(s, "_publisher", InMemoryMessagePublisher([]))
+    mocker.patch.object(s, "_repo", repo)
+    mocker.patch.object(s, "_publisher", publisher)
     return s
 
 
 @pytest.mark.asyncio()
-async def test_customer_credit_reserved(pact: MessagePact, service: Service) -> None:
+async def test_customer_credit_reserved(
+    pact: MessagePact,
+    mocker: MockerFixture,
+    service: Service,
+    repo: InMemoryOrderRepository,
+    publisher: InMemoryMessagePublisher,
+) -> None:
+    mocker.patch("orders.domain.uuid.uuid4", return_value=uuid.UUID("f408cf27-8c53-486e-89f6-f0b45355b3ed"))
+    order = await use_cases.create_order(
+        CreateOrderCommand(
+            correlation_id=uuid.UUID("58b587a2-860c-4c4a-a9af-70457ffae596"),
+            customer_id=uuid.UUID("1e5df855-a757-4aa5-a55f-2ddf6930b250"),
+            order_total=Decimal("123.99"),
+        ),
+        repo,
+        publisher,
+    )
+
     expected_message = {
         "correlation_id": Term(Format.Regexes.uuid.value, "58b587a2-860c-4c4a-a9af-70457ffae596"),
         "customer_id": Term(Format.Regexes.uuid.value, "1e5df855-a757-4aa5-a55f-2ddf6930b250"),
-        "order_id": Term(Format.Regexes.uuid.value, "f408cf27-8c53-486e-89f6-f0b45355b3ed"),
+        "order_id": Term(Format.Regexes.uuid.value, str(order.id)),
     }
     (
         pact.given("Customer credit is reserved for created order")
         .expects_to_receive("CustomerCreditReserved event")
         .with_content(expected_message)
     )
-    data = create_proto_from_pact(proto.CustomerCreditReserved, expected_message)
 
     with pact:
+        data = create_proto_from_pact(proto.CustomerCreditReserved, expected_message)
         await service.customer_credit_reserved_handler(
             data, correlation_id=uuid.UUID("58b587a2-860c-4c4a-a9af-70457ffae596")
         )

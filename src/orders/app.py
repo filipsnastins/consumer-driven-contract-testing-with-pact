@@ -11,7 +11,7 @@ from orders import use_cases
 from orders.commands import ApproveOrderCommand, CreateOrderCommand
 from orders.domain import OrderNotFoundError
 from orders.events import OrderCreatedEvent
-from orders.repository import OrderRepository
+from orders.repository import DynamoDBOrderRepository
 from tomodachi_bootstrap import TomodachiServiceBase
 
 
@@ -26,7 +26,7 @@ class Service(TomodachiServiceBase):
                 OrderCreatedEvent: "order--created",
             },
         )
-        self._repository = OrderRepository(dynamodb.get_table_name(), clients.get_dynamodb_client)
+        self._repo = DynamoDBOrderRepository(dynamodb.get_table_name(), clients.get_dynamodb_client)
 
     async def _start_service(self) -> None:
         await dynamodb.create_table()
@@ -39,7 +39,7 @@ class Service(TomodachiServiceBase):
             customer_id=uuid.UUID(body["customer_id"]),
             order_total=Money.from_sub_units(body["order_total"]).as_decimal(),
         )
-        order = await use_cases.create_order(cmd, self._repository, self._publisher)
+        order = await use_cases.create_order(cmd, self._repo, self._publisher)
         return web.json_response(data=order.to_dict())
 
     @tomodachi.http("GET", r"/order/(?P<order_id>[^/]+?)/?")
@@ -47,7 +47,7 @@ class Service(TomodachiServiceBase):
         self, request: web.Request, order_id: str, correlation_id: uuid.UUID
     ) -> web.Response:
         try:
-            order = await use_cases.get_order(uuid.UUID(order_id), self._repository)
+            order = await use_cases.get_order(uuid.UUID(order_id), self._repo)
             return web.json_response(order.to_dict(), status=200)
         except OrderNotFoundError:
             return web.json_response({"error": "ORDER_NOT_FOUND"}, status=404)
@@ -67,4 +67,4 @@ class Service(TomodachiServiceBase):
             order_id=uuid.UUID(data.order_id),
             customer_id=uuid.UUID(data.customer_id),
         )
-        await use_cases.approve_order(cmd, self._repository)
+        await use_cases.approve_order(cmd, self._repo)

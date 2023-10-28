@@ -146,5 +146,6 @@ env = [
     "AWS_SESSION_TOKEN=testing",
     # Service configuration
     "ENVIRONMENT=autotest",
+    "DYNAMODB_TABLE_NAME=autotest-table",
     "AWS_REGION=us-east-1",
 ]

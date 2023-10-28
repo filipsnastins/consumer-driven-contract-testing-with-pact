@@ -2,12 +2,11 @@ import uuid
 from asyncio import AbstractEventLoop
 from decimal import Decimal
 
-from fakes import InMemoryMessagePublisher
 from pact import MessageProvider
 
-from adapters import proto
 from orders import use_cases
 from orders.commands import CreateOrderCommand
+from tests.fakes import InMemoryMessagePublisher, InMemoryOrderRepository
 from tests.pact_helpers import proto_to_dict
 
 DEFAULT_OPTS = {
@@ -20,17 +19,20 @@ DEFAULT_OPTS = {
 
 
 async def order_created_message_provider() -> dict:
+    repo = InMemoryOrderRepository([])
     publisher = InMemoryMessagePublisher([])
 
-    cmd = CreateOrderCommand(
-        correlation_id=uuid.UUID("58b587a2-860c-4c4a-a9af-70457ffae596"),
-        customer_id=uuid.UUID("1e5df855-a757-4aa5-a55f-2ddf6930b250"),
-        order_total=Decimal("123.99"),
+    await use_cases.create_order(
+        CreateOrderCommand(
+            correlation_id=uuid.UUID("58b587a2-860c-4c4a-a9af-70457ffae596"),
+            customer_id=uuid.UUID("1e5df855-a757-4aa5-a55f-2ddf6930b250"),
+            order_total=Decimal("123.99"),
+        ),
+        repo,
+        publisher,
     )
-    await use_cases.create_order(cmd, publisher=publisher)
 
     [message] = publisher.messages
-    assert isinstance(message.to_proto(), proto.OrderCreated)
     return proto_to_dict(message.to_proto())
 
 

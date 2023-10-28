@@ -2,12 +2,12 @@ import uuid
 from asyncio import AbstractEventLoop
 from decimal import Decimal
 
-from fakes import InMemoryMessagePublisher
 from pact import MessageProvider
+from pytest_mock import MockerFixture
 
-from adapters import proto
 from customers import use_cases
-from customers.commands import ReserveCustomerCreditCommand
+from customers.commands import CreateCustomerCommand, ReserveCustomerCreditCommand
+from tests.fakes import InMemoryCustomerRepository, InMemoryMessagePublisher
 from tests.pact_helpers import proto_to_dict
 
 DEFAULT_OPTS = {
@@ -19,27 +19,31 @@ DEFAULT_OPTS = {
 }
 
 
-async def customer_credit_reserved_message_provider() -> dict:
+async def customer_credit_reserved_message_provider(mocker: MockerFixture) -> dict:
+    repo = InMemoryCustomerRepository([])
     publisher = InMemoryMessagePublisher([])
+    mocker.patch("customers.domain.uuid.uuid4", return_value=uuid.UUID("1e5df855-a757-4aa5-a55f-2ddf6930b250"))
+    customer = await use_cases.create_customer(CreateCustomerCommand(name="John Doe"), repo)
 
-    cmd = ReserveCustomerCreditCommand(
-        correlation_id=uuid.UUID("58b587a2-860c-4c4a-a9af-70457ffae596"),
-        customer_id=uuid.UUID("1e5df855-a757-4aa5-a55f-2ddf6930b250"),
-        order_id=uuid.UUID("f408cf27-8c53-486e-89f6-f0b45355b3ed"),
-        order_total=Decimal("123.99"),
+    await use_cases.reserve_customer_credit(
+        ReserveCustomerCreditCommand(
+            customer_id=customer.id,
+            order_id=uuid.UUID("f408cf27-8c53-486e-89f6-f0b45355b3ed"),
+            order_total=Decimal("123.99"),
+        ),
+        repo,
+        publisher,
     )
-    await use_cases.reserve_customer_credit(cmd, publisher=publisher)
 
     [message] = publisher.messages
-    assert isinstance(message.to_proto(), proto.CustomerCreditReserved)
     return proto_to_dict(message.to_proto())
 
 
-def test_verify_service_orders_consumer(event_loop: AbstractEventLoop) -> None:
+def test_verify_service_orders_consumer(event_loop: AbstractEventLoop, mocker: MockerFixture) -> None:
     provider = MessageProvider(
         message_providers={
             "Customer credit is reserved for created order": lambda: event_loop.run_until_complete(
-                customer_credit_reserved_message_provider()
+                customer_credit_reserved_message_provider(mocker)
             ),
         },
         provider="service-customers--sns",

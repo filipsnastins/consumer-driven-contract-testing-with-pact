@@ -6,8 +6,10 @@ from pact import Format, Like, MessageConsumer, MessagePact, Provider, Term
 from pytest_mock import MockerFixture
 
 from adapters import proto
+from customers import use_cases
 from customers.app import Service
-from tests.fakes import InMemoryMessagePublisher
+from customers.commands import CreateCustomerCommand
+from tests.fakes import InMemoryCustomerRepository, InMemoryMessagePublisher
 from tests.pact_helpers import create_proto_from_pact
 
 
@@ -23,19 +25,36 @@ def pact() -> MessagePact:
     )
 
 
+@pytest.fixture()
+def repo() -> InMemoryCustomerRepository:
+    return InMemoryCustomerRepository([])
+
+
+@pytest.fixture()
+def publisher() -> InMemoryMessagePublisher:
+    return InMemoryMessagePublisher([])
+
+
 @pytest_asyncio.fixture()
-async def service(mocker: MockerFixture) -> Service:
+async def service(
+    mocker: MockerFixture, repo: InMemoryCustomerRepository, publisher: InMemoryMessagePublisher
+) -> Service:
     s = Service()
-    await s._start_service()
-    mocker.patch.object(s, "_publisher", InMemoryMessagePublisher([]))
+    mocker.patch.object(s, "_repo", repo)
+    mocker.patch.object(s, "_publisher", publisher)
     return s
 
 
 @pytest.mark.asyncio()
-async def test_order_created(pact: MessagePact, service: Service) -> None:
+async def test_consume_order_created_event(
+    pact: MessagePact, mocker: MockerFixture, service: Service, repo: InMemoryCustomerRepository
+) -> None:
+    mocker.patch("customers.domain.uuid.uuid4", return_value=uuid.UUID("d3100f4f-c8a7-4207-a5e2-40aa122b4b33"))
+    customer = await use_cases.create_customer(CreateCustomerCommand(name="John Doe"), repo)
+
     expected_message = {
         "correlation_id": Term(Format.Regexes.uuid.value, "23b2c005-a914-41ab-92d7-d8d4d8e98020"),
-        "customer_id": Term(Format.Regexes.uuid.value, "d3100f4f-c8a7-4207-a5e2-40aa122b4b33"),
+        "customer_id": Term(Format.Regexes.uuid.value, str(customer.id)),
         "order_id": Term(Format.Regexes.uuid.value, "cc935616-e439-45a9-89ed-c6ef32bbc59e"),
         "order_total": Like(
             {
@@ -44,9 +63,8 @@ async def test_order_created(pact: MessagePact, service: Service) -> None:
             }
         ),
     }
-
     pact.given("New order is created").expects_to_receive("OrderCreated event").with_content(expected_message)
-    data = create_proto_from_pact(proto.OrderCreated, expected_message)
 
     with pact:
+        data = create_proto_from_pact(proto.OrderCreated, expected_message)
         await service.order_created_handler(data, correlation_id=uuid.UUID("23b2c005-a914-41ab-92d7-d8d4d8e98020"))

@@ -1,4 +1,5 @@
 import uuid
+from typing import Protocol
 
 import structlog
 from stockholm import Money
@@ -9,7 +10,15 @@ from customers.domain import Customer
 logger: structlog.stdlib.BoundLogger = structlog.get_logger()
 
 
-class CustomerRepository:
+class CustomerRepository(Protocol):
+    async def save(self, customer: Customer) -> None:
+        ...
+
+    async def get(self, customer_id: uuid.UUID) -> Customer | None:
+        ...
+
+
+class DynamoDBCustomerRepository(CustomerRepository):
     def __init__(self, table_name: str, client_factory: DynamoDBClientFactory) -> None:
         self._table_name = table_name
         self._client_factory = client_factory
@@ -30,7 +39,7 @@ class CustomerRepository:
                     },
                 },
             )
-            logger.info("customer_repository__saved", customer_id=customer.id)
+            logger.info("customer_repo__saved", customer_id=customer.id)
 
     async def get(self, customer_id: uuid.UUID) -> Customer | None:
         async with self._client_factory() as client:
@@ -40,7 +49,7 @@ class CustomerRepository:
             )
             item = response.get("Item")
             if not item:
-                logger.info("customer_repository__not_found", customer_id=customer_id)
+                logger.info("customer_repo__not_found", customer_id=customer_id)
                 return None
             return Customer(
                 id=uuid.UUID(item["Id"]["S"]),
