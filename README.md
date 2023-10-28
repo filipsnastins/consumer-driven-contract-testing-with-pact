@@ -1,4 +1,10 @@
-# pact-tomodachi-contract-testing
+# contract-testing-pact-python
+
+**WIP**
+
+An example of applying Consumer-Driven Contract Testing (CDC) for testing microservice compatibility in isolation.
+
+## Development
 
 - Generate Protobuf with [buf](https://buf.build)
 

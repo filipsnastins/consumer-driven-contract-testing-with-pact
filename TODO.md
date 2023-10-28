@@ -1,8 +1,7 @@
 # TODOs
 
-- [x] Test with nested Protobuf structures like google.types.Money
-- [x] Test service-customers (consumer) --> service-orders (provider)
+- [ ] Test GraphQL (frontend + some FastAPI backend service like warehouse)
 
-- [x] Test with AWS SNS SQS + Protobuf (asynchronous messages)
-- [x] Test REST API
-- [ ] Test GraphQL
+- [ ] Working with provider states with REST and GraphQL
+
+- [ ] Add persistence layer to the services
