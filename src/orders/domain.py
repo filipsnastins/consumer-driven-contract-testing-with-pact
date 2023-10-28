@@ -6,6 +6,10 @@ from enum import Enum
 from orders.events import OrderCreatedEvent
 
 
+class OrderNotFoundError(Exception):
+    pass
+
+
 class OrderState(Enum):
     CREATED = "CREATED"
     APPROVED = "APPROVED"
@@ -14,12 +18,12 @@ class OrderState(Enum):
 class Order:
     def __init__(
         self,
-        order_id: uuid.UUID,
+        id: uuid.UUID,
         customer_id: uuid.UUID,
         order_total: Decimal,
         state: OrderState,
     ) -> None:
-        self.order_id = order_id
+        self.id = id
         self.customer_id = customer_id
         self.order_total = order_total
         self.state = state
@@ -31,7 +35,7 @@ class Order:
         order_total: Decimal,
     ) -> tuple["Order", OrderCreatedEvent]:
         order = Order(
-            order_id=uuid.uuid4(),
+            id=uuid.uuid4(),
             customer_id=customer_id,
             order_total=order_total,
             state=OrderState.CREATED,
@@ -40,7 +44,7 @@ class Order:
             event_id=uuid.uuid4(),
             correlation_id=correlation_id,
             customer_id=order.customer_id,
-            order_id=order.order_id,
+            order_id=order.id,
             order_total=order.order_total,
             created_at=datetime.datetime.now().replace(tzinfo=datetime.UTC),
         )
@@ -48,3 +52,11 @@ class Order:
 
     def approve(self) -> None:
         self.state = OrderState.APPROVED
+
+    def to_dict(self) -> dict:
+        return {
+            "id": str(self.id),
+            "customer_id": str(self.customer_id),
+            "order_total": str(self.order_total),
+            "state": self.state.value,
+        }

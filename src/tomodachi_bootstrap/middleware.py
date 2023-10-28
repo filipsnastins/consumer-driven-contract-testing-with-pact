@@ -42,7 +42,13 @@ async def message_correlation_id_middleware(func: Callable, *args: Any, **kwargs
     message = kwargs.get("message")
 
     if isinstance(message, dict):
-        correlation_id = message.get("data", {}).get("correlation_id", uuid.uuid4())
+        data = message.get("data")
+        if isinstance(data, dict):
+            correlation_id = data.get("correlation_id", uuid.uuid4())
+        elif data and hasattr(data, "correlation_id"):
+            correlation_id = data.correlation_id
+        else:
+            correlation_id = uuid.uuid4()
     elif hasattr(message, "correlation_id"):
         correlation_id = getattr(message, "correlation_id")  # noqa: B009
     else:

@@ -23,11 +23,31 @@ docker compose up
 
 - Pact Broker URL: <https://filipsnastins.pactflow.io>
 
+- Create customer
+
+```bash
+curl -X POST --header "Content-Type: application/json" -d '{
+  "name": "John Doe"
+}' http://localhost:9701/customer
+```
+
+- Get customer
+
+```bash
+curl http://localhost:9701/customer/290210dc-10c8-4eb0-91f0-fb9dfb727513
+```
+
 - Create order
 
 ```bash
 curl -X POST --header "Content-Type: application/json" -d '{
-  "customer_id": "97c05e79-5902-451f-b96e-f06c8fc3ed68",
+  "customer_id": "290210dc-10c8-4eb0-91f0-fb9dfb727513",
   "order_total": 12399
 }' http://localhost:9702/order
+```
+
+- Get order
+
+```bash
+curl http://localhost:9702/order/dd7ab823-223b-480e-858b-0f9acd6f7314
 ```

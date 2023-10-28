@@ -2,6 +2,22 @@ version: '3.8'
 
 services:
   # Example applications
+  customers:
+    build:
+      target: development
+    ports:
+      - 9701:9700
+    volumes:
+      - ./src:/app/src
+    command: ['tomodachi', 'run', 'src/customers/app.py']
+    restart: always
+    environment:
+      ENVIRONMENT: development
+      DYNAMODB_TABLE_NAME: customers
+      AWS_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: testing
+      AWS_SECRET_ACCESS_KEY: testing
+      AWS_ENDPOINT_URL: http://localstack:4566
   orders:
     build:
       target: development
@@ -13,10 +29,13 @@ services:
     restart: always
     environment:
       ENVIRONMENT: development
+      DYNAMODB_TABLE_NAME: orders
       AWS_REGION: us-east-1
       AWS_ACCESS_KEY_ID: testing
       AWS_SECRET_ACCESS_KEY: testing
       AWS_ENDPOINT_URL: http://localstack:4566
+
+  # Application infrastructure
   localstack:
     image: localstack/localstack:2.2.0
     volumes:

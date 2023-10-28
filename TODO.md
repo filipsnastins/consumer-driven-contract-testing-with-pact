@@ -4,4 +4,4 @@
 
 - [ ] Working with provider states with REST and GraphQL
 
-- [ ] Add persistence layer to the services
+- [x] Add persistence layer to the services

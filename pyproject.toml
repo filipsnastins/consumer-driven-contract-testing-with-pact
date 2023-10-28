@@ -103,7 +103,7 @@ python_version = "3.11"
 ignore_missing_imports = true
 
 [tool.flake8]
-ignore = ["ANN101", "ANN401", "BLK100", "E501", "LIT101", "PL123"]
+ignore = ["ANN101", "ANN102", "ANN401", "BLK100", "E501", "LIT101", "PL123"]
 literal-inline-quotes = "double"
 literal-multiline-quotes = "double"
 exclude = [
