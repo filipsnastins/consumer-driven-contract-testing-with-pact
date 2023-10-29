@@ -1,3 +1,4 @@
+import strawberry
 import structlog
 from stockholm import Money
 
@@ -9,7 +10,7 @@ logger: structlog.stdlib.BoundLogger = structlog.get_logger()
 
 
 async def get_all_customers() -> list[CustomerType]:
-    repository = SQLAlchemyOrderHistoryRepository(sqlalchemy.create_session_factory())
+    repository = SQLAlchemyOrderHistoryRepository(sqlalchemy.session_factory)
     customers = await repository.get_all_customers()
     logger.info("get_all_customers")
     return [
@@ -27,3 +28,8 @@ async def get_all_customers() -> list[CustomerType]:
         )
         for customer in customers
     ]
+
+
+@strawberry.type
+class GraphQLQuery:
+    get_all_customers: list[CustomerType] = strawberry.field(resolver=get_all_customers)

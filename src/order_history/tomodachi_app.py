@@ -19,11 +19,10 @@ class ServiceOrderHistory(TomodachiServiceBase):
 
     def __init__(self) -> None:
         super().__init__()
-        self._repository = SQLAlchemyOrderHistoryRepository(sqlalchemy.create_session_factory())
+        self._repository = SQLAlchemyOrderHistoryRepository(sqlalchemy.session_factory)
 
     async def _start_service(self) -> None:
-        engine = sqlalchemy.create_async_engine()
-        async with engine.begin() as conn:
+        async with sqlalchemy.engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
         logger.info("database_created")
 

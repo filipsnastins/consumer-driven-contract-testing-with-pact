@@ -20,6 +20,8 @@ class CustomerModel(Base):
     id: Mapped[str] = mapped_column(String, primary_key=True, index=True)
     name: Mapped[str] = mapped_column(String)
 
+    # FIXME: Async FastAPI and async SQLAlchemy lazy loading didn't work together, so used "joined" eager loading instead
+    # Not to be used like this in production
     orders: Mapped[list["OrderModel"]] = relationship("OrderModel", back_populates="customer", lazy="joined")
 
 
@@ -50,7 +52,7 @@ class OrderHistoryRepository(Protocol):
         ...
 
 
-# The repository implementation doesn't handle race conditions
+# FIXME: The repository implementation doesn't handle race conditions, not for production use
 class SQLAlchemyOrderHistoryRepository:
     def __init__(self, session_factory: async_sessionmaker[AsyncSession]) -> None:
         self._session_factory = session_factory
