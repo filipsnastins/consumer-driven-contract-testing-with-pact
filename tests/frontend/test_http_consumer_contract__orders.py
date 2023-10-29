@@ -46,7 +46,7 @@ async def test_create_order(pact: Pact, client: OrderClient) -> None:
         "id": Term(Format.Regexes.uuid.value, "f408cf27-8c53-486e-89f6-f0b45355b3ed"),
         "customer_id": Like("d3100f4f-c8a7-4207-a5e2-40aa122b4b33"),
         "order_total": Like(10099),
-        "state": "CREATED",
+        "state": Like("CREATED"),
     }
     (
         pact.upon_receiving("A request to create a new order")
@@ -107,7 +107,7 @@ async def test_get_order(pact: Pact, client: OrderClient) -> None:
         "id": Term(Format.Regexes.uuid.value, "f408cf27-8c53-486e-89f6-f0b45355b3ed"),
         "customer_id": Like("d3100f4f-c8a7-4207-a5e2-40aa122b4b33"),
         "order_total": Like(10099),
-        "state": "CREATED",
+        "state": Like("CREATED"),
     }
     (
         pact.given("An order f408cf27 exists")

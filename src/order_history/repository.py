@@ -51,9 +51,6 @@ class OrderHistoryRepository(Protocol):
     async def get_all_customers(self) -> list[Customer]:
         ...
 
-    async def get_customer(self, customer_id: uuid.UUID) -> Customer | None:
-        ...
-
 
 # The repository implementation doesn't handle race conditions
 class SQLAlchemyOrderHistoryRepository:
@@ -96,8 +93,3 @@ class SQLAlchemyOrderHistoryRepository:
         async with self._session_factory() as session:
             stmt = select(Customer)
             return list((await session.scalars(stmt.order_by(Customer.id))).unique())
-
-    async def get_customer(self, customer_id: uuid.UUID) -> Customer | None:
-        async with self._session_factory() as session:
-            stmt = select(Customer).where(Customer.id == customer_id)
-            return await session.scalar(stmt)

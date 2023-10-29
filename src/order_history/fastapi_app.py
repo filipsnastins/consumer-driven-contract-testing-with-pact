@@ -9,7 +9,6 @@ from order_history.graphql_schema import CustomerType
 @strawberry.type
 class Query:
     get_all_customers: list[CustomerType] = strawberry.field(resolver=views.get_all_customers)
-    get_customer: CustomerType | None = strawberry.field(resolver=views.get_customer)
 
 
 graphql_schema = strawberry.Schema(query=Query)
