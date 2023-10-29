@@ -9,6 +9,8 @@ from yarl import URL
 
 from frontend.orders import Order, OrderClient, OrderNotFoundError, OrderState
 
+pytestmark = pytest.mark.order(1)
+
 
 @pytest.fixture(scope="module")
 def mock_url() -> URL:
@@ -53,6 +55,7 @@ async def test_create_order(pact: Pact, client: OrderClient) -> None:
         .with_request(
             method="POST",
             path="/order",
+            headers={"Content-Type": "application/json"},
             body={
                 "customer_id": "f408cf27-8c53-486e-89f6-f0b45355b3ed",
                 "order_total": 10099,

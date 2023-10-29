@@ -2,7 +2,7 @@ import uuid
 from decimal import Decimal
 from typing import Protocol
 
-from sqlalchemy import UUID, ForeignKey, Integer, String, select
+from sqlalchemy import ForeignKey, Integer, String, select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from stockholm import Money
@@ -19,7 +19,7 @@ class Base(DeclarativeBase):
 class Customer(Base):
     __tablename__ = "customers"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID, primary_key=True, index=True)
+    id: Mapped[uuid.UUID] = mapped_column(String, primary_key=True, index=True)
     name: Mapped[str] = mapped_column(String)
 
     orders: Mapped[list["Order"]] = relationship("Order", back_populates="customer", lazy="joined")
@@ -28,8 +28,8 @@ class Customer(Base):
 class Order(Base):
     __tablename__ = "orders"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID, primary_key=True, index=True)
-    customer_id: Mapped[uuid.UUID] = mapped_column(UUID, ForeignKey("customers.id"))
+    id: Mapped[uuid.UUID] = mapped_column(String, primary_key=True, index=True)
+    customer_id: Mapped[uuid.UUID] = mapped_column(String, ForeignKey("customers.id"))
     state: Mapped[str] = mapped_column(String)
     order_total: Mapped[Integer] = mapped_column(Integer)
 
@@ -60,7 +60,7 @@ class SQLAlchemyOrderHistoryRepository:
     async def register_new_customer(self, customer_id: uuid.UUID, name: str) -> None:
         async with self._session_factory() as session:
             customer = Customer(
-                id=customer_id,
+                id=str(customer_id),
                 name=name,
             )
             session.add(customer)
@@ -71,8 +71,8 @@ class SQLAlchemyOrderHistoryRepository:
     ) -> None:
         async with self._session_factory() as session:
             order = Order(
-                id=order_id,
-                customer_id=customer_id,
+                id=str(order_id),
+                customer_id=str(customer_id),
                 state=state,
                 order_total=int(Money(order_total).to_sub_units()),
             )
@@ -81,7 +81,7 @@ class SQLAlchemyOrderHistoryRepository:
 
     async def update_order_state(self, order_id: uuid.UUID, state: str) -> None:
         async with self._session_factory() as session:
-            stmt = select(Order).where(Order.id == order_id)
+            stmt = select(Order).where(Order.id == str(order_id))
             order = await session.scalar(stmt)
             if not order:
                 raise OrderNotFoundError(order_id)

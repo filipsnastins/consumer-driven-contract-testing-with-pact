@@ -9,7 +9,7 @@ from adapters.settings import get_fastapi_app_settings
 def create_async_engine() -> sqlalchemy.ext.asyncio.AsyncEngine:
     settings = get_fastapi_app_settings()
     return sqlalchemy.ext.asyncio.create_async_engine(
-        settings.DATABASE_URL,
+        settings.database_url,
         pool_pre_ping=True,
     )
 

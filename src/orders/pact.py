@@ -40,7 +40,7 @@ MAPPING: dict[str, PactProviderStateSetupHandler] = {
 
 async def setup_pact_provider_state(
     consumer: str,
-    state: str,
+    state: str | None,
     states: list[str],
     correlation_id: uuid.UUID,
     repository: OrderRepository,

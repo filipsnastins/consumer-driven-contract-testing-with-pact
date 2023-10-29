@@ -9,6 +9,8 @@ from yarl import URL
 
 from frontend.order_history import Customer, Order, OrderHistoryClient
 
+pytestmark = pytest.mark.order(1)
+
 
 @pytest.fixture(scope="module")
 def mock_url() -> URL:
@@ -60,10 +62,12 @@ async def test_get_all_customers(pact: Pact, client: OrderHistoryClient) -> None
         }
     }
     (
-        pact.upon_receiving("A request to get all customers")
+        pact.given("A customer d3100f4f exists")
+        .upon_receiving("A request to get all customers")
         .with_request(
             method="POST",
             path="/graphql",
+            headers={"Content-Type": "application/json"},
             body={
                 "query": "{getAllCustomers {id name orders {id orderTotal state}}}",
             },

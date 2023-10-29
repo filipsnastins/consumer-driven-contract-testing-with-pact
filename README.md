@@ -29,7 +29,7 @@ docker compose up
 
 - DynamoDB Admin: <http://localhost:8001>
 
-- Order history GraphQL sandbox: <http://localhost:9703/graphql>
+- Order history GraphiQL IDE: <http://localhost:9703/graphql>
 
 ### Sample requests
 

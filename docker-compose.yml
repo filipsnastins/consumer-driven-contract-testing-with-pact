@@ -44,6 +44,7 @@ services:
     command: ['uvicorn', 'order_history.fastapi_app:app', '--host', '0.0.0.0', '--reload']
     restart: always
     environment:
+      ENVIRONMENT: development
       DATABASE_URL: postgresql+asyncpg://postgres:postgres@app-postgres:5433/postgres
   service-order-history--eventconsumer:
     build:

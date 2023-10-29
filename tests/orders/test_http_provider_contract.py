@@ -6,6 +6,8 @@ from pact import Verifier
 from tomodachi_testcontainers import MotoContainer, TomodachiContainer
 from tomodachi_testcontainers.utils import get_available_port
 
+pytestmark = pytest.mark.order(2)
+
 DEFAULT_OPTS = {
     "broker_url": "http://localhost:9292",
     "broker_username": "pactbroker",
@@ -43,7 +45,7 @@ def verifier(service_orders_container: TomodachiContainer) -> Verifier:
     )
 
 
-def test_against_broker(verifier: Verifier, service_orders_container: TomodachiContainer) -> None:
+def test_verify_consumer_contracts(verifier: Verifier, service_orders_container: TomodachiContainer) -> None:
     code, _ = verifier.verify_with_broker(
         **DEFAULT_OPTS,
         provider_states_setup_url=f"{service_orders_container.get_external_url()}/_pact/provider_states",

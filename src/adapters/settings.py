@@ -6,11 +6,16 @@ from service_layer.tomodachi_bootstrap import TomodachiBaseSettings
 
 
 class TomodachiAppSettings(TomodachiBaseSettings):
-    DYNAMODB_TABLE_NAME: str
+    dynamodb_table_name: str
 
 
 class FastAPIAppSettings(BaseSettings):
-    DATABASE_URL: str
+    environment: str
+    database_url: str
+
+    @property
+    def is_dev_env(self) -> bool:
+        return self.environment in ["development", "autotest"]
 
 
 @lru_cache

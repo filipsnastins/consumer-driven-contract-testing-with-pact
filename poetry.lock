@@ -1990,6 +1990,20 @@ pytest = ">=5.0"
 dev = ["pre-commit", "pytest-asyncio", "tox"]
 
 [[package]]
+name = "pytest-order"
+version = "1.1.0"
+description = "pytest plugin to run your tests in a specific order"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "pytest-order-1.1.0.tar.gz", hash = "sha256:139d25b30826b78eebb42722f747eab14c44b88059d7a71d4f79d14a057269a5"},
+    {file = "pytest_order-1.1.0-py3-none-any.whl", hash = "sha256:3b3730969c97900fa5cd31ecff80847680ed56b2490954565c14949ba60d9371"},
+]
+
+[package.dependencies]
+pytest = {version = ">=6.2.4", markers = "python_version >= \"3.10\""}
+
+[[package]]
 name = "python-dateutil"
 version = "2.8.2"
 description = "Extensions to the standard Python datetime module"
@@ -3379,4 +3393,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "4740c87fa3d777aa0dc4633f93951d547fea8db033b972243eb25e481cfaf9ee"
+content-hash = "08d8993d9238f8347dbfc280a35f98a76ae9400808a8335f6dd689fcb0464986"

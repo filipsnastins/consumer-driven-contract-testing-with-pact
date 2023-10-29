@@ -7,8 +7,10 @@ from pytest_mock import MockerFixture
 
 from adapters import proto
 from order_history.tomodachi_app import ServiceOrderHistory
-from tests.fakes import InMemoryOrderHistoryRepository, InMemoryOrderRepository
+from tests.fakes import InMemoryOrderHistoryRepository
 from tests.pact_helpers import create_proto_from_pact
+
+pytestmark = pytest.mark.order(1)
 
 
 @pytest.fixture()
@@ -29,7 +31,7 @@ def repository() -> InMemoryOrderHistoryRepository:
 
 
 @pytest_asyncio.fixture()
-async def service(mocker: MockerFixture, repository: InMemoryOrderRepository) -> ServiceOrderHistory:
+async def service(mocker: MockerFixture, repository: InMemoryOrderHistoryRepository) -> ServiceOrderHistory:
     service = ServiceOrderHistory()
     mocker.patch.object(service, "_repository", repository)
     return service

@@ -8,6 +8,8 @@ from yarl import URL
 
 from frontend.customers import Customer, CustomerClient, CustomerNotFoundError
 
+pytestmark = pytest.mark.order(1)
+
 
 @pytest.fixture(scope="module")
 def mock_url() -> URL:
@@ -50,6 +52,7 @@ async def test_create_customer(pact: Pact, client: CustomerClient) -> None:
         .with_request(
             method="POST",
             path="/customer",
+            headers={"Content-Type": "application/json"},
             body={
                 "name": "John Doe",
             },

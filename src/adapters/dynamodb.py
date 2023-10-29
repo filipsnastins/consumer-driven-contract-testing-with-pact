@@ -36,7 +36,7 @@ def get_client() -> DynamoDBClient:
 
 
 def get_table_name() -> str:
-    return get_tomodachi_app_settings().DYNAMODB_TABLE_NAME
+    return get_tomodachi_app_settings().dynamodb_table_name
 
 
 async def create_table() -> None:
