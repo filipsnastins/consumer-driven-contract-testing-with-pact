@@ -3,8 +3,8 @@ import uuid
 from sqlalchemy import select
 
 from adapters import sqlalchemy
-from order_history.models import Customer
-from order_history.schema import CustomerType, OrderType
+from order_history.repository import Customer
+from order_history.graphql_schema import CustomerType, OrderType
 
 # TODO: to get the benefits of GraphQL, use lazy loading and generators
 # Read up on how to use GraphQL + SQLAlchemy

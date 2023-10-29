@@ -20,10 +20,11 @@ async def create_order(cmd: CreateOrderCommand, repository: OrderRepository, pub
     return order
 
 
-async def approve_order(cmd: ApproveOrderCommand, repository: OrderRepository) -> None:
+async def approve_order(cmd: ApproveOrderCommand, repository: OrderRepository, publisher: MessagePublisher) -> None:
     order = await repository.get(cmd.order_id)
     if not order:
         raise OrderNotFoundError(cmd.order_id)
-    order.approve()
+    event = order.approve(correlation_id=cmd.correlation_id)
     await repository.save(order)
+    await publisher.publish(event)
     logger.info("order_approved", order_id=cmd.order_id)

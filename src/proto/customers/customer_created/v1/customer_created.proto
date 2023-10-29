@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package customers.customer_created.v1;
+
+message CustomerCreated {
+    string event_id = 1;
+    string correlation_id = 2;
+    string customer_id = 3;
+    string created_at = 4;
+}

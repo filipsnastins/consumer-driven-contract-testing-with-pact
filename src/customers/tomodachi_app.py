@@ -10,7 +10,7 @@ from adapters.publisher import AWSSNSSQSMessagePublisher
 from customers import use_cases, views
 from customers.commands import CreateCustomerCommand, ReserveCustomerCreditCommand
 from customers.domain import CustomerNotFoundError
-from customers.events import CustomerCreditReservedEvent
+from customers.events import CustomerCreatedEvent, CustomerCreditReservedEvent
 from customers.repository import DynamoDBCustomerRepository
 from service_layer.tomodachi_bootstrap import TomodachiServiceBase
 
@@ -23,6 +23,7 @@ class ServiceCustomers(TomodachiServiceBase):
         self._publisher = AWSSNSSQSMessagePublisher(
             service=self,
             message_topic_map={
+                CustomerCreatedEvent: "customer--created",
                 CustomerCreditReservedEvent: "customer--credit-reserved",
             },
         )
@@ -34,8 +35,8 @@ class ServiceCustomers(TomodachiServiceBase):
     @tomodachi.http("POST", r"/customer")
     async def create_customer_handler(self, request: web.Request, correlation_id: uuid.UUID) -> web.Response:
         data = await request.json()
-        cmd = CreateCustomerCommand(name=str(data["name"]))
-        customer = await use_cases.create_customer(cmd, self._repository)
+        cmd = CreateCustomerCommand(correlation_id=correlation_id, name=str(data["name"]))
+        customer = await use_cases.create_customer(cmd, self._repository, self._publisher)
         return web.json_response(customer.to_dict(), status=200)
 
     @tomodachi.http("GET", r"/customer/(?P<customer_id>[^/]+?)/?")
@@ -58,6 +59,7 @@ class ServiceCustomers(TomodachiServiceBase):
     )
     async def order_created_handler(self, data: proto.OrderCreated, correlation_id: uuid.UUID) -> None:
         cmd = ReserveCustomerCreditCommand(
+            correlation_id=correlation_id,
             customer_id=uuid.UUID(data.customer_id),
             order_id=uuid.UUID(data.order_id),
             order_total=Money.from_proto(data.order_total).as_decimal(),

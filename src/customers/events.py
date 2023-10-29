@@ -19,6 +19,22 @@ class Event(Protocol):
 
 
 @dataclass
+class CustomerCreatedEvent:
+    event_id: uuid.UUID
+    correlation_id: uuid.UUID
+    customer_id: uuid.UUID
+    created_at: datetime.datetime
+
+    def to_proto(self) -> proto.CustomerCreated:
+        return proto.CustomerCreated(
+            event_id=str(self.event_id),
+            correlation_id=str(self.correlation_id),
+            customer_id=str(self.customer_id),
+            created_at=self.created_at.isoformat(),
+        )
+
+
+@dataclass
 class CustomerCreditReservedEvent:
     event_id: uuid.UUID
     correlation_id: uuid.UUID

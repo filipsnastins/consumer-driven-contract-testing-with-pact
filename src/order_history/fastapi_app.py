@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from strawberry.fastapi import GraphQLRouter
 
 from order_history import views
-from order_history.schema import CustomerType
+from order_history.graphql_schema import CustomerType
 
 logger: structlog.stdlib.BoundLogger = structlog.get_logger()
 

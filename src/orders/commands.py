@@ -12,5 +12,6 @@ class CreateOrderCommand:
 
 @dataclass
 class ApproveOrderCommand:
+    correlation_id: uuid.UUID
     order_id: uuid.UUID
     customer_id: uuid.UUID

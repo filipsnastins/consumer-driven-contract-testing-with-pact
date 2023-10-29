@@ -5,7 +5,6 @@ isort:skip_file
 import builtins
 import google.protobuf.descriptor
 import google.protobuf.message
-import google.type.money_pb2
 import sys
 
 if sys.version_info >= (3, 8):
@@ -16,33 +15,25 @@ else:
 DESCRIPTOR: google.protobuf.descriptor.FileDescriptor
 
 @typing_extensions.final
-class OrderCreated(google.protobuf.message.Message):
+class CustomerCreated(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
     EVENT_ID_FIELD_NUMBER: builtins.int
     CORRELATION_ID_FIELD_NUMBER: builtins.int
-    ORDER_ID_FIELD_NUMBER: builtins.int
     CUSTOMER_ID_FIELD_NUMBER: builtins.int
-    ORDER_TOTAL_FIELD_NUMBER: builtins.int
     CREATED_AT_FIELD_NUMBER: builtins.int
     event_id: builtins.str
     correlation_id: builtins.str
-    order_id: builtins.str
     customer_id: builtins.str
-    @property
-    def order_total(self) -> google.type.money_pb2.Money: ...
     created_at: builtins.str
     def __init__(
         self,
         *,
         event_id: builtins.str = ...,
         correlation_id: builtins.str = ...,
-        order_id: builtins.str = ...,
         customer_id: builtins.str = ...,
-        order_total: google.type.money_pb2.Money | None = ...,
         created_at: builtins.str = ...,
     ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["order_total", b"order_total"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["correlation_id", b"correlation_id", "created_at", b"created_at", "customer_id", b"customer_id", "event_id", b"event_id", "order_id", b"order_id", "order_total", b"order_total"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["correlation_id", b"correlation_id", "created_at", b"created_at", "customer_id", b"customer_id", "event_id", b"event_id"]) -> None: ...
 
-global___OrderCreated = OrderCreated
+global___CustomerCreated = CustomerCreated

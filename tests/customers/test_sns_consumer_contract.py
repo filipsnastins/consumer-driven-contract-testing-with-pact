@@ -47,10 +47,21 @@ async def service(
 
 @pytest.mark.asyncio()
 async def test_consume_order_created_event(
-    pact: MessagePact, mocker: MockerFixture, service: ServiceCustomers, repository: InMemoryCustomerRepository
+    pact: MessagePact,
+    mocker: MockerFixture,
+    service: ServiceCustomers,
+    repository: InMemoryCustomerRepository,
+    publisher: InMemoryMessagePublisher,
 ) -> None:
     mocker.patch("customers.domain.uuid.uuid4", return_value=uuid.UUID("d3100f4f-c8a7-4207-a5e2-40aa122b4b33"))
-    customer = await use_cases.create_customer(CreateCustomerCommand(name="John Doe"), repository)
+    customer = await use_cases.create_customer(
+        CreateCustomerCommand(
+            correlation_id=uuid.UUID("293178a5-4838-4e6a-8d63-18062093027e"),
+            name="John Doe",
+        ),
+        repository,
+        publisher,
+    )
 
     expected_message = {
         "correlation_id": Term(Format.Regexes.uuid.value, "23b2c005-a914-41ab-92d7-d8d4d8e98020"),

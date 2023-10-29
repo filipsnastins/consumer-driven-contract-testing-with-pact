@@ -10,7 +10,7 @@ from adapters.publisher import AWSSNSSQSMessagePublisher
 from orders import use_cases, views
 from orders.commands import ApproveOrderCommand, CreateOrderCommand
 from orders.domain import OrderNotFoundError
-from orders.events import OrderCreatedEvent
+from orders.events import OrderApprovedEvent, OrderCreatedEvent
 from orders.pact import setup_pact_provider_state
 from orders.repository import DynamoDBOrderRepository
 from service_layer.tomodachi_bootstrap import TomodachiServiceBase
@@ -25,6 +25,7 @@ class ServiceOrders(TomodachiServiceBase):
             service=self,
             message_topic_map={
                 OrderCreatedEvent: "order--created",
+                OrderApprovedEvent: "order--approved",
             },
         )
         self._repository = DynamoDBOrderRepository(dynamodb.get_table_name(), dynamodb.get_client)
@@ -80,7 +81,8 @@ class ServiceOrders(TomodachiServiceBase):
         self, data: proto.CustomerCreditReserved, correlation_id: uuid.UUID
     ) -> None:
         cmd = ApproveOrderCommand(
+            correlation_id=correlation_id,
             order_id=uuid.UUID(data.order_id),
             customer_id=uuid.UUID(data.customer_id),
         )
-        await use_cases.approve_order(cmd, self._repository)
+        await use_cases.approve_order(cmd, self._repository, self._publisher)

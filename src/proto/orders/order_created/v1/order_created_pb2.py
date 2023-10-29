@@ -12,11 +12,10 @@ from google.protobuf import symbol_database as _symbol_database
 _sym_db = _symbol_database.Default()
 
 
-from proto.google.type import money_pb2 as google_dot_type_dot_money__pb2
 
 
 DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(
-    b'\n+orders/order_created/v1/order_created.proto\x12\x17orders.order_created.v1\x1a\x17google/type/money.proto"\xe0\x01\n\x0cOrderCreated\x12\x19\n\x08\x65vent_id\x18\x01 \x01(\tR\x07\x65ventId\x12%\n\x0e\x63orrelation_id\x18\x02 \x01(\tR\rcorrelationId\x12\x1f\n\x0b\x63ustomer_id\x18\x03 \x01(\tR\ncustomerId\x12\x19\n\x08order_id\x18\x04 \x01(\tR\x07orderId\x12\x33\n\x0border_total\x18\x05 \x01(\x0b\x32\x12.google.type.MoneyR\norderTotal\x12\x1d\n\ncreated_at\x18\x06 \x01(\tR\tcreatedAtb\x06proto3'
+    b'\n+orders/order_created/v1/order_created.proto\x12\x17orders.order_created.v1\x1a\x17google/type/money.proto"\xe0\x01\n\x0cOrderCreated\x12\x19\n\x08\x65vent_id\x18\x01 \x01(\tR\x07\x65ventId\x12%\n\x0e\x63orrelation_id\x18\x02 \x01(\tR\rcorrelationId\x12\x19\n\x08order_id\x18\x03 \x01(\tR\x07orderId\x12\x1f\n\x0b\x63ustomer_id\x18\x04 \x01(\tR\ncustomerId\x12\x33\n\x0border_total\x18\x05 \x01(\x0b\x32\x12.google.type.MoneyR\norderTotal\x12\x1d\n\ncreated_at\x18\x06 \x01(\tR\tcreatedAtb\x06proto3'
 )
 
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())

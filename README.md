@@ -41,7 +41,7 @@ curl http://localhost:9701/customer/cf265033-8e25-42ba-a938-23fcb8f9797b
 
 ```bash
 curl -X POST --header "Content-Type: application/json" -d '{
-  "customer_id": "cf265033-8e25-42ba-a938-23fcb8f9797b",
+  "customer_id": "5bf06495-39e9-4f01-81f1-a9c1dd219105",
   "order_total": 12399
 }' http://localhost:9702/order
 ```

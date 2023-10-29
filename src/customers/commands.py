@@ -5,6 +5,7 @@ from decimal import Decimal
 
 @dataclass
 class ReserveCustomerCreditCommand:
+    correlation_id: uuid.UUID
     customer_id: uuid.UUID
     order_id: uuid.UUID
     order_total: Decimal
@@ -12,4 +13,5 @@ class ReserveCustomerCreditCommand:
 
 @dataclass
 class CreateCustomerCommand:
+    correlation_id: uuid.UUID
     name: str

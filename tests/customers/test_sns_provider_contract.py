@@ -23,10 +23,18 @@ async def customer_credit_reserved_message_provider(mocker: MockerFixture) -> di
     repository = InMemoryCustomerRepository([])
     publisher = InMemoryMessagePublisher([])
     mocker.patch("customers.domain.uuid.uuid4", return_value=uuid.UUID("1e5df855-a757-4aa5-a55f-2ddf6930b250"))
-    customer = await use_cases.create_customer(CreateCustomerCommand(name="John Doe"), repository)
+    customer = await use_cases.create_customer(
+        CreateCustomerCommand(
+            correlation_id=uuid.UUID("293178a5-4838-4e6a-8d63-18062093027e"),
+            name="John Doe",
+        ),
+        repository,
+        publisher,
+    )
 
     await use_cases.reserve_customer_credit(
         ReserveCustomerCreditCommand(
+            correlation_id=uuid.UUID("293178a5-4838-4e6a-8d63-18062093027e"),
             customer_id=customer.id,
             order_id=uuid.UUID("f408cf27-8c53-486e-89f6-f0b45355b3ed"),
             order_total=Decimal("123.99"),

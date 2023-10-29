@@ -5,7 +5,7 @@ from enum import Enum
 
 from stockholm import Money
 
-from orders.events import OrderCreatedEvent
+from orders.events import OrderApprovedEvent, OrderCreatedEvent
 
 
 class OrderNotFoundError(Exception):
@@ -52,8 +52,15 @@ class Order:
         )
         return order, event
 
-    def approve(self) -> None:
+    def approve(self, correlation_id: uuid.UUID) -> OrderApprovedEvent:
         self.state = OrderState.APPROVED
+        return OrderApprovedEvent(
+            event_id=uuid.uuid4(),
+            correlation_id=correlation_id,
+            order_id=self.id,
+            customer_id=self.customer_id,
+            created_at=datetime.datetime.now().replace(tzinfo=datetime.UTC),
+        )
 
     def to_dict(self) -> dict:
         return {
