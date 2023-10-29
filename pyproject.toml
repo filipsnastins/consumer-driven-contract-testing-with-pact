@@ -21,6 +21,7 @@ uvicorn = "^0.23.2"
 uvloop = "^0.19.0"
 
 [tool.poetry.group.dev.dependencies]
+aiosqlite = "^0.19.0"
 autoflake = ">=2.2.1"
 bandit = ">=1.7.5"
 black = ">=23.10.0"
@@ -151,6 +152,7 @@ env = [
     "AWS_SESSION_TOKEN=testing",
     # Service configuration
     "ENVIRONMENT=autotest",
+    "DATABASE_URL=sqlite+aiosqlite:///:memory:",
     "DYNAMODB_TABLE_NAME=autotest-table",
     "AWS_REGION=us-east-1",
 ]
