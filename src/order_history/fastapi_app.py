@@ -1,6 +1,9 @@
 import uuid
+from contextlib import asynccontextmanager
+from typing import AsyncGenerator
 
 import strawberry
+import structlog
 from fastapi import FastAPI, Response
 from pydantic import BaseModel
 from strawberry.fastapi import GraphQLRouter
@@ -12,6 +15,8 @@ from order_history.graphql_schema import CustomerType
 from order_history.pact import setup_pact_provider_state
 from order_history.repository import Base, SQLAlchemyOrderHistoryRepository
 
+logger: structlog.stdlib.BoundLogger = structlog.get_logger()
+
 
 @strawberry.type
 class Query:
@@ -22,18 +27,28 @@ graphql_schema = strawberry.Schema(query=Query)
 graphql_app = GraphQLRouter(graphql_schema)  # type: ignore
 
 
-app = FastAPI(title="service--order-history")
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    engine = sqlalchemy.create_async_engine()
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    logger.info("database_created")
+    yield
+
+
+app = FastAPI(title="service--order-history", lifespan=lifespan)
 app.include_router(graphql_app, prefix="/graphql")
-
-
-class ProviderState(BaseModel):
-    consumer: str
-    state: str | None = None
 
 
 @app.get("/health")
 def ping() -> dict[str, str]:
     return {"status": "ok"}
+
+
+class ProviderState(BaseModel):
+    consumer: str
+    state: str | None = None
+    states: list[str] = []
 
 
 @app.post("/_pact/provider_states")
@@ -42,13 +57,10 @@ async def mock_pact_provider_states(provider_state: ProviderState, response: Res
     if not settings.is_dev_env:
         response.status_code = 403
         return {}
-    engine = sqlalchemy.create_async_engine()
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
     await setup_pact_provider_state(
         consumer=provider_state.consumer,
         state=provider_state.state,
-        states=[],
+        states=provider_state.states,
         correlation_id=uuid.uuid4(),
         repository=SQLAlchemyOrderHistoryRepository(sqlalchemy.create_session_factory()),
     )

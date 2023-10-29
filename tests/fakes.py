@@ -2,7 +2,7 @@ import uuid
 from decimal import Decimal
 
 import customers.domain
-import order_history.repository
+import order_history.domain
 import orders.domain
 from adapters.publisher import Message
 
@@ -30,16 +30,16 @@ class InMemoryOrderRepository:
 
 
 class InMemoryOrderHistoryRepository:
-    def __init__(self, customers: list[order_history.repository.Customer]) -> None:
+    def __init__(self, customers: list[order_history.domain.Customer]) -> None:
         self.customers = {customer.id: customer for customer in customers}
 
     async def register_new_customer(self, customer_id: uuid.UUID, name: str) -> None:
-        self.customers[customer_id] = order_history.repository.Customer(id=customer_id, name=name, orders=[])
+        self.customers[customer_id] = order_history.domain.Customer(id=customer_id, name=name, orders=[])
 
     async def register_new_order(
         self, customer_id: uuid.UUID, order_id: uuid.UUID, state: str, order_total: Decimal
     ) -> None:
-        order = order_history.repository.Order(
+        order = order_history.domain.Order(
             id=order_id,
             state=state,
             order_total=order_total,
@@ -49,10 +49,10 @@ class InMemoryOrderHistoryRepository:
     async def update_order_state(self, order_id: uuid.UUID, state: str) -> None:
         order = next(order for customer in self.customers.values() for order in customer.orders if order.id == order_id)
         if not order:
-            raise order_history.repository.OrderNotFoundError(order_id)
+            raise order_history.domain.OrderNotFoundError(order_id)
         order.state = state
 
-    async def get_all_customers(self) -> list[order_history.repository.Customer]:
+    async def get_all_customers(self) -> list[order_history.domain.Customer]:
         return list(self.customers.values())
 
 

@@ -7,33 +7,31 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from stockholm import Money
 
-
-class OrderNotFoundError(Exception):
-    pass
+from order_history.domain import Customer, Order, OrderNotFoundError
 
 
 class Base(DeclarativeBase):
     pass
 
 
-class Customer(Base):
+class CustomerModel(Base):
     __tablename__ = "customers"
 
-    id: Mapped[uuid.UUID] = mapped_column(String, primary_key=True, index=True)
+    id: Mapped[str] = mapped_column(String, primary_key=True, index=True)
     name: Mapped[str] = mapped_column(String)
 
-    orders: Mapped[list["Order"]] = relationship("Order", back_populates="customer", lazy="joined")
+    orders: Mapped[list["OrderModel"]] = relationship("OrderModel", back_populates="customer", lazy="joined")
 
 
-class Order(Base):
+class OrderModel(Base):
     __tablename__ = "orders"
 
-    id: Mapped[uuid.UUID] = mapped_column(String, primary_key=True, index=True)
-    customer_id: Mapped[uuid.UUID] = mapped_column(String, ForeignKey("customers.id"))
+    id: Mapped[str] = mapped_column(String, primary_key=True, index=True)
+    customer_id: Mapped[str] = mapped_column(String, ForeignKey("customers.id"))
     state: Mapped[str] = mapped_column(String)
     order_total: Mapped[Integer] = mapped_column(Integer)
 
-    customer: Mapped[Customer] = relationship("Customer", back_populates="orders", lazy="joined")
+    customer: Mapped[CustomerModel] = relationship("CustomerModel", back_populates="orders", lazy="joined")
 
 
 class OrderHistoryRepository(Protocol):
@@ -59,37 +57,52 @@ class SQLAlchemyOrderHistoryRepository:
 
     async def register_new_customer(self, customer_id: uuid.UUID, name: str) -> None:
         async with self._session_factory() as session:
-            customer = Customer(
+            customer_model = CustomerModel(
                 id=str(customer_id),
                 name=name,
             )
-            session.add(customer)
+            session.add(customer_model)
             await session.commit()
 
     async def register_new_order(
         self, customer_id: uuid.UUID, order_id: uuid.UUID, state: str, order_total: Decimal
     ) -> None:
         async with self._session_factory() as session:
-            order = Order(
+            order_model = OrderModel(
                 id=str(order_id),
                 customer_id=str(customer_id),
                 state=state,
                 order_total=int(Money(order_total).to_sub_units()),
             )
-            session.add(order)
+            session.add(order_model)
             await session.commit()
 
     async def update_order_state(self, order_id: uuid.UUID, state: str) -> None:
         async with self._session_factory() as session:
-            stmt = select(Order).where(Order.id == str(order_id))
-            order = await session.scalar(stmt)
-            if not order:
+            stmt = select(OrderModel).where(OrderModel.id == str(order_id))
+            order_model = await session.scalar(stmt)
+            if not order_model:
                 raise OrderNotFoundError(order_id)
-            order.state = state
-            session.add(order)
+            order_model.state = state
+            session.add(order_model)
             await session.commit()
 
     async def get_all_customers(self) -> list[Customer]:
         async with self._session_factory() as session:
-            stmt = select(Customer)
-            return list((await session.scalars(stmt.order_by(Customer.id))).unique())
+            stmt = select(CustomerModel)
+            customer_models = list((await session.scalars(stmt.order_by(CustomerModel.id))).unique())
+            return [
+                Customer(
+                    id=uuid.UUID(customer_model.id),
+                    name=customer_model.name,
+                    orders=[
+                        Order(
+                            id=uuid.UUID(order_model.id),
+                            state=order_model.state,
+                            order_total=Money.from_sub_units(order_model.order_total).as_decimal(),
+                        )
+                        for order_model in customer_model.orders
+                    ],
+                )
+                for customer_model in customer_models
+            ]

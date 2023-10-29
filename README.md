@@ -44,14 +44,14 @@ curl -X POST --header "Content-Type: application/json" -d '{
 - Get customer
 
 ```bash
-curl http://localhost:9701/customer/4dc8d1ed-9737-48fa-8e3f-ec2b272b7cac
+curl http://localhost:9701/customer/d5c6999b-9ee3-4ba1-aec0-6fbe8d9d8636
 ```
 
 - Create order
 
 ```bash
 curl -X POST --header "Content-Type: application/json" -d '{
-  "customer_id": "4dc8d1ed-9737-48fa-8e3f-ec2b272b7cac",
+  "customer_id": "d5c6999b-9ee3-4ba1-aec0-6fbe8d9d8636",
   "order_total": 12399
 }' http://localhost:9702/order
 ```

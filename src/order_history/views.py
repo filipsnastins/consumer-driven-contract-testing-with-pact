@@ -1,4 +1,5 @@
 import structlog
+from stockholm import Money
 
 from adapters import sqlalchemy
 from order_history.graphql_schema import CustomerType, OrderType
@@ -18,8 +19,8 @@ async def get_all_customers() -> list[CustomerType]:
             orders=[
                 OrderType(
                     id=str(order.id),
-                    order_total=int(order.order_total),  # type: ignore
                     state=str(order.state),
+                    order_total=int(Money(order.order_total).to_sub_units()),
                 )
                 for order in customer.orders
             ],
