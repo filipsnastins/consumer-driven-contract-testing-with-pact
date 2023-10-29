@@ -2,9 +2,9 @@ import uuid
 from decimal import Decimal
 from typing import Protocol
 
-from sqlalchemy import UUID, Column, ForeignKey, Integer, String, select
+from sqlalchemy import UUID, ForeignKey, Integer, String, select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
-from sqlalchemy.orm import DeclarativeBase, Mapped, relationship
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from stockholm import Money
 
 
@@ -19,8 +19,8 @@ class Base(DeclarativeBase):
 class Customer(Base):
     __tablename__ = "customers"
 
-    id = Column(UUID, primary_key=True, index=True)
-    name = Column(String)
+    id: Mapped[uuid.UUID] = mapped_column(UUID, primary_key=True, index=True)
+    name: Mapped[str] = mapped_column(String)
 
     orders: Mapped[list["Order"]] = relationship("Order", back_populates="customer", lazy="joined")
 
@@ -28,10 +28,10 @@ class Customer(Base):
 class Order(Base):
     __tablename__ = "orders"
 
-    id = Column(UUID, primary_key=True, index=True)
-    customer_id = Column(UUID, ForeignKey("customers.id"))
-    state = Column(String)
-    order_total = Column(Integer)
+    id: Mapped[uuid.UUID] = mapped_column(UUID, primary_key=True, index=True)
+    customer_id: Mapped[uuid.UUID] = mapped_column(UUID, ForeignKey("customers.id"))
+    state: Mapped[str] = mapped_column(String)
+    order_total: Mapped[Integer] = mapped_column(Integer)
 
     customer: Mapped[Customer] = relationship("Customer", back_populates="orders", lazy="joined")
 
@@ -55,6 +55,7 @@ class OrderHistoryRepository(Protocol):
         ...
 
 
+# The repository implementation doesn't handle race conditions
 class SQLAlchemyOrderHistoryRepository:
     def __init__(self, session_factory: async_sessionmaker[AsyncSession]) -> None:
         self._session_factory = session_factory

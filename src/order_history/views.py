@@ -20,7 +20,7 @@ async def get_all_customers() -> list[CustomerType]:
             orders=[
                 OrderType(
                     id=str(order.id),
-                    order_total=int(order.order_total),
+                    order_total=int(order.order_total),  # type: ignore
                     state=str(order.state),
                 )
                 for order in customer.orders
@@ -44,7 +44,7 @@ async def get_customer(customer_id: uuid.UUID) -> CustomerType | None:
         orders=[
             OrderType(
                 id=str(order.id),
-                order_total=int(order.order_total),
+                order_total=int(order.order_total),  # type: ignore
                 state=str(order.state),
             )
             for order in customer.orders
