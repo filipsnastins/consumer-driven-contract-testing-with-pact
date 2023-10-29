@@ -5,15 +5,15 @@ from aiohttp import web
 from stockholm import Money
 from tomodachi.envelope.protobuf_base import ProtobufBase
 
-from adapters import clients, dynamodb, proto
+from adapters import dynamodb, proto
 from adapters.publisher import AWSSNSSQSMessagePublisher
-from orders import use_cases
+from orders import use_cases, views
 from orders.commands import ApproveOrderCommand, CreateOrderCommand
 from orders.domain import OrderNotFoundError
 from orders.events import OrderCreatedEvent
 from orders.pact import setup_pact_provider_state
 from orders.repository import DynamoDBOrderRepository
-from tomodachi_bootstrap import TomodachiServiceBase
+from service_layer.tomodachi_bootstrap import TomodachiServiceBase
 
 
 class ServiceOrders(TomodachiServiceBase):
@@ -27,7 +27,7 @@ class ServiceOrders(TomodachiServiceBase):
                 OrderCreatedEvent: "order--created",
             },
         )
-        self._repository = DynamoDBOrderRepository(dynamodb.get_table_name(), clients.get_dynamodb_client)
+        self._repository = DynamoDBOrderRepository(dynamodb.get_table_name(), dynamodb.get_client)
 
     async def _start_service(self) -> None:
         await dynamodb.create_table()
@@ -48,7 +48,7 @@ class ServiceOrders(TomodachiServiceBase):
         self, request: web.Request, order_id: str, correlation_id: uuid.UUID
     ) -> web.Response:
         try:
-            order = await use_cases.get_order(uuid.UUID(order_id), self._repository)
+            order = await views.get_order(uuid.UUID(order_id), self._repository)
             return web.json_response(order.to_dict(), status=200)
         except OrderNotFoundError:
             return web.json_response({"error": "ORDER_NOT_FOUND"}, status=404)

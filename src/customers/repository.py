@@ -4,7 +4,7 @@ from typing import Protocol
 import structlog
 from stockholm import Money
 
-from adapters.clients import DynamoDBClientFactory
+from adapters.dynamodb import DynamoDBClientFactory
 from customers.domain import Customer
 
 logger: structlog.stdlib.BoundLogger = structlog.get_logger()

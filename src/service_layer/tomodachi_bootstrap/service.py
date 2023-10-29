@@ -4,8 +4,8 @@ import tomodachi
 from aiohttp import web
 from pydantic_settings import BaseSettings
 
-from tomodachi_bootstrap.logger import configure_structlog
-from tomodachi_bootstrap.middleware import (
+from service_layer.tomodachi_bootstrap.logger import configure_structlog
+from service_layer.tomodachi_bootstrap.middleware import (
     http_correlation_id_middleware,
     message_correlation_id_middleware,
     sns_sqs_message_retry_middleware,

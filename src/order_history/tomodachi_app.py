@@ -4,7 +4,7 @@ import tomodachi
 from tomodachi.envelope.protobuf_base import ProtobufBase
 
 from adapters import proto
-from tomodachi_bootstrap import TomodachiServiceBase
+from service_layer.tomodachi_bootstrap import TomodachiServiceBase
 
 
 class ServiceOrderHistory(TomodachiServiceBase):

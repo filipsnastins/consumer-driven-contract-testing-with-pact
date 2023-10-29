@@ -11,7 +11,7 @@ An example of applying Consumer-Driven Contract Testing (CDC) for testing micros
 ```bash
 brew install bufbuild/buf/buf
 
-cd src/proto
+cd src/adapters/proto
 buf generate .
 ```
 
@@ -34,14 +34,14 @@ curl -X POST --header "Content-Type: application/json" -d '{
 - Get customer
 
 ```bash
-curl http://localhost:9701/customer/290210dc-10c8-4eb0-91f0-fb9dfb727513
+curl http://localhost:9701/customer/cf265033-8e25-42ba-a938-23fcb8f9797b
 ```
 
 - Create order
 
 ```bash
 curl -X POST --header "Content-Type: application/json" -d '{
-  "customer_id": "290210dc-10c8-4eb0-91f0-fb9dfb727513",
+  "customer_id": "cf265033-8e25-42ba-a938-23fcb8f9797b",
   "order_total": 12399
 }' http://localhost:9702/order
 ```
@@ -49,5 +49,5 @@ curl -X POST --header "Content-Type: application/json" -d '{
 - Get order
 
 ```bash
-curl http://localhost:9702/order/dd7ab823-223b-480e-858b-0f9acd6f7314
+curl http://localhost:9702/order/8fccc85c-bbdd-47fb-b6c9-c5ed9a8d88df
 ```

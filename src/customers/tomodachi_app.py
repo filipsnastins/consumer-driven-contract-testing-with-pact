@@ -5,14 +5,14 @@ from aiohttp import web
 from stockholm import Money
 from tomodachi.envelope.protobuf_base import ProtobufBase
 
-from adapters import clients, dynamodb, proto
+from adapters import dynamodb, proto
 from adapters.publisher import AWSSNSSQSMessagePublisher
-from customers import use_cases
+from customers import use_cases, views
 from customers.commands import CreateCustomerCommand, ReserveCustomerCreditCommand
 from customers.domain import CustomerNotFoundError
 from customers.events import CustomerCreditReservedEvent
 from customers.repository import DynamoDBCustomerRepository
-from tomodachi_bootstrap import TomodachiServiceBase
+from service_layer.tomodachi_bootstrap import TomodachiServiceBase
 
 
 class ServiceCustomers(TomodachiServiceBase):
@@ -26,7 +26,7 @@ class ServiceCustomers(TomodachiServiceBase):
                 CustomerCreditReservedEvent: "customer--credit-reserved",
             },
         )
-        self._repository = DynamoDBCustomerRepository(dynamodb.get_table_name(), clients.get_dynamodb_client)
+        self._repository = DynamoDBCustomerRepository(dynamodb.get_table_name(), dynamodb.get_client)
 
     async def _start_service(self) -> None:
         await dynamodb.create_table()
@@ -43,7 +43,7 @@ class ServiceCustomers(TomodachiServiceBase):
         self, request: web.Request, customer_id: str, correlation_id: uuid.UUID
     ) -> web.Response:
         try:
-            customer = await use_cases.get_customer(uuid.UUID(customer_id), self._repository)
+            customer = await views.get_customer(uuid.UUID(customer_id), self._repository)
             return web.json_response(customer.to_dict(), status=200)
         except CustomerNotFoundError:
             return web.json_response({"error": "CUSTOMER_NOT_FOUND"}, status=404)

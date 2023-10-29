@@ -1,5 +1,3 @@
-import uuid
-
 import structlog
 
 from adapters.publisher import MessagePublisher
@@ -19,15 +17,6 @@ async def create_order(cmd: CreateOrderCommand, repository: OrderRepository, pub
     await repository.save(order)
     await publisher.publish(event)
     logger.info("order_created", order_id=order.id, customer_id=order.customer_id)
-    return order
-
-
-async def get_order(order_id: uuid.UUID, repository: OrderRepository) -> Order:
-    order = await repository.get(order_id)
-    if not order:
-        logger.info("order_not_found", order_id=order_id)
-        raise OrderNotFoundError(order_id)
-    logger.info("get_order", order_id=order_id)
     return order
 
 

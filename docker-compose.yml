@@ -2,38 +2,38 @@ version: '3.8'
 
 services:
   # Applications
-  # customers:
-  #   build:
-  #     target: development
-  #   ports:
-  #     - 9701:9700
-  #   volumes:
-  #     - ./src:/app/src
-  #   command: ['tomodachi', 'run', 'src/customers/tomodachi_app.py']
-  #   restart: always
-  #   environment:
-  #     ENVIRONMENT: development
-  #     DYNAMODB_TABLE_NAME: customers
-  #     AWS_REGION: us-east-1
-  #     AWS_ACCESS_KEY_ID: testing
-  #     AWS_SECRET_ACCESS_KEY: testing
-  #     AWS_ENDPOINT_URL: http://app-localstack:4566
-  # orders:
-  #   build:
-  #     target: development
-  #   ports:
-  #     - 9702:9700
-  #   volumes:
-  #     - ./src:/app/src
-  #   command: ['tomodachi', 'run', 'src/orders/tomodachi_app.py']
-  #   restart: always
-  #   environment:
-  #     ENVIRONMENT: development
-  #     DYNAMODB_TABLE_NAME: orders
-  #     AWS_REGION: us-east-1
-  #     AWS_ACCESS_KEY_ID: testing
-  #     AWS_SECRET_ACCESS_KEY: testing
-  #     AWS_ENDPOINT_URL: http://app-localstack:4566
+  customers:
+    build:
+      target: development
+    ports:
+      - 9701:9700
+    volumes:
+      - ./src:/app/src
+    command: ['tomodachi', 'run', 'src/customers/tomodachi_app.py']
+    restart: always
+    environment:
+      ENVIRONMENT: development
+      DYNAMODB_TABLE_NAME: customers
+      AWS_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: testing
+      AWS_SECRET_ACCESS_KEY: testing
+      AWS_ENDPOINT_URL: http://app-localstack:4566
+  orders:
+    build:
+      target: development
+    ports:
+      - 9702:9700
+    volumes:
+      - ./src:/app/src
+    command: ['tomodachi', 'run', 'src/orders/tomodachi_app.py']
+    restart: always
+    environment:
+      ENVIRONMENT: development
+      DYNAMODB_TABLE_NAME: orders
+      AWS_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: testing
+      AWS_SECRET_ACCESS_KEY: testing
+      AWS_ENDPOINT_URL: http://app-localstack:4566
   order-history-graphql:
     build:
       target: development
@@ -47,21 +47,21 @@ services:
       DATABASE_URL: postgresql+asyncpg://postgres:postgres@app-postgres:5433/postgres
 
   # Application infrastructure
-  # app-localstack:
-  #   image: localstack/localstack:2.2.0
-  #   volumes:
-  #     - /var/run/docker.sock:/var/run/docker.sock
-  #   ports:
-  #     - 4566:4566
-  # dynamodb-admin:
-  #   image: aaronshaf/dynamodb-admin:4.6.1
-  #   ports:
-  #     - 8001:8001
-  #   environment:
-  #     AWS_REGION: us-east-1
-  #     AWS_ACCESS_KEY_ID: testing
-  #     AWS_SECRET_ACCESS_KEY: testing
-  #     DYNAMO_ENDPOINT: http://app-localstack:4566
+  app-localstack:
+    image: localstack/localstack:2.2.0
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - 4566:4566
+  dynamodb-admin:
+    image: aaronshaf/dynamodb-admin:4.6.1
+    ports:
+      - 8001:8001
+    environment:
+      AWS_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: testing
+      AWS_SECRET_ACCESS_KEY: testing
+      DYNAMO_ENDPOINT: http://app-localstack:4566
   app-postgres:
     image: postgres
     ports:
@@ -75,39 +75,39 @@ services:
       POSTGRES_DB: postgres
 
   # Pact
-  # pact-broker:
-  #   image: pactfoundation/pact-broker:latest-multi
-  #   depends_on:
-  #     - pact-postgres
-  #   ports:
-  #     - 9292:9292
-  #   restart: always
-  #   environment:
-  #     PACT_BROKER_ALLOW_PUBLIC_READ: 'true'
-  #     PACT_BROKER_BASIC_AUTH_USERNAME: pactbroker
-  #     PACT_BROKER_BASIC_AUTH_PASSWORD: pactbroker
-  #     PACT_BROKER_DATABASE_URL: postgres://postgres:postgres@pact-postgres:5434/postgres
-  #   healthcheck:
-  #     test:
-  #       [
-  #         'CMD',
-  #         'curl',
-  #         '--silent',
-  #         '--show-error',
-  #         '--fail',
-  #         'http://pactbroker:pactbroker@localhost:9292/diagnostic/status/heartbeat',
-  #       ]
-  #     interval: 1s
-  #     timeout: 2s
-  #     retries: 5
-  # pact-postgres:
-  #   image: postgres
-  #   ports:
-  #     - 5434:5434
-  #   healthcheck:
-  #     test: psql postgres -p 5434 -U postgres --command 'SELECT 1'
-  #   command: ['-p', '5434']
-  #   environment:
-  #     POSTGRES_USER: postgres
-  #     POSTGRES_PASSWORD: postgres
-  #     POSTGRES_DB: postgres
+  pact-broker:
+    image: pactfoundation/pact-broker:latest-multi
+    depends_on:
+      - pact-postgres
+    ports:
+      - 9292:9292
+    restart: always
+    environment:
+      PACT_BROKER_ALLOW_PUBLIC_READ: 'true'
+      PACT_BROKER_BASIC_AUTH_USERNAME: pactbroker
+      PACT_BROKER_BASIC_AUTH_PASSWORD: pactbroker
+      PACT_BROKER_DATABASE_URL: postgres://postgres:postgres@pact-postgres:5434/postgres
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'curl',
+          '--silent',
+          '--show-error',
+          '--fail',
+          'http://pactbroker:pactbroker@localhost:9292/diagnostic/status/heartbeat',
+        ]
+      interval: 1s
+      timeout: 2s
+      retries: 5
+  pact-postgres:
+    image: postgres
+    ports:
+      - 5434:5434
+    healthcheck:
+      test: psql postgres -p 5434 -U postgres --command 'SELECT 1'
+    command: ['-p', '5434']
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
