@@ -13,7 +13,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n4customers/customer_created/v1/customer_created.proto\x12\x1d\x63ustomers.customer_created.v1\"\x93\x01\n\x0f\x43ustomerCreated\x12\x19\n\x08\x65vent_id\x18\x01 \x01(\tR\x07\x65ventId\x12%\n\x0e\x63orrelation_id\x18\x02 \x01(\tR\rcorrelationId\x12\x1f\n\x0b\x63ustomer_id\x18\x03 \x01(\tR\ncustomerId\x12\x1d\n\ncreated_at\x18\x04 \x01(\tR\tcreatedAtb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n4customers/customer_created/v1/customer_created.proto\x12\x1d\x63ustomers.customer_created.v1\"\xa7\x01\n\x0f\x43ustomerCreated\x12\x19\n\x08\x65vent_id\x18\x01 \x01(\tR\x07\x65ventId\x12%\n\x0e\x63orrelation_id\x18\x02 \x01(\tR\rcorrelationId\x12\x1f\n\x0b\x63ustomer_id\x18\x03 \x01(\tR\ncustomerId\x12\x12\n\x04name\x18\x04 \x01(\tR\x04name\x12\x1d\n\ncreated_at\x18\x05 \x01(\tR\tcreatedAtb\x06proto3')
 
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'customers.customer_created.v1.customer_created_pb2', globals())
@@ -21,5 +21,5 @@ if _descriptor._USE_C_DESCRIPTORS == False:
 
   DESCRIPTOR._options = None
   _CUSTOMERCREATED._serialized_start=88
-  _CUSTOMERCREATED._serialized_end=235
+  _CUSTOMERCREATED._serialized_end=255
 # @@protoc_insertion_point(module_scope)

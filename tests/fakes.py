@@ -33,3 +33,6 @@ class InMemoryMessagePublisher:
 
     async def publish(self, message: Message) -> None:
         self.messages.append(message)
+
+    def clear(self) -> None:
+        self.messages.clear()

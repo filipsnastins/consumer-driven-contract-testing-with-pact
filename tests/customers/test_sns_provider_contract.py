@@ -31,6 +31,7 @@ async def customer_credit_reserved_message_provider(mocker: MockerFixture) -> di
         repository,
         publisher,
     )
+    publisher.clear()
 
     await use_cases.reserve_customer_credit(
         ReserveCustomerCreditCommand(

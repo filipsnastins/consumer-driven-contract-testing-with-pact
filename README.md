@@ -6,6 +6,8 @@ An example of applying Consumer-Driven Contract Testing (CDC) for testing micros
 
 ## Development
 
+### Start local environment
+
 - Generate Protobuf with [buf](https://buf.build)
 
 ```bash
@@ -21,7 +23,15 @@ buf generate .
 docker compose up
 ```
 
-- Pact Broker URL: <https://filipsnastins.pactflow.io>
+### URLs
+
+- Pact Broker URL: <http://localhost:9292>
+
+- DynamoDB Admin: <http://localhost:8001>
+
+- Order history GraphQL sandbox: <http://localhost:9703/graphql>
+
+### Sample requests
 
 - Create customer
 
@@ -34,14 +44,14 @@ curl -X POST --header "Content-Type: application/json" -d '{
 - Get customer
 
 ```bash
-curl http://localhost:9701/customer/cf265033-8e25-42ba-a938-23fcb8f9797b
+curl http://localhost:9701/customer/4dc8d1ed-9737-48fa-8e3f-ec2b272b7cac
 ```
 
 - Create order
 
 ```bash
 curl -X POST --header "Content-Type: application/json" -d '{
-  "customer_id": "5bf06495-39e9-4f01-81f1-a9c1dd219105",
+  "customer_id": "4dc8d1ed-9737-48fa-8e3f-ec2b272b7cac",
   "order_total": 12399
 }' http://localhost:9702/order
 ```
@@ -50,4 +60,21 @@ curl -X POST --header "Content-Type: application/json" -d '{
 
 ```bash
 curl http://localhost:9702/order/8fccc85c-bbdd-47fb-b6c9-c5ed9a8d88df
+```
+
+- Get order history for all customers
+
+```bash
+curl -X POST -H "Content-Type: application/json" -d '{"query": "{getAllCustomers {id name orders {id orderTotal state}}}"}' http://localhost:9703/graphql
+```
+
+### Format and lint code, and run tests
+
+```bash
+poetry run format
+
+poetry run lint
+
+poetry run test
+poetry run test-ci
 ```

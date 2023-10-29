@@ -1,12 +1,9 @@
 import strawberry
-import structlog
 from fastapi import FastAPI
 from strawberry.fastapi import GraphQLRouter
 
 from order_history import views
 from order_history.graphql_schema import CustomerType
-
-logger: structlog.stdlib.BoundLogger = structlog.get_logger()
 
 
 @strawberry.type
@@ -15,8 +12,8 @@ class Query:
     get_customer: CustomerType | None = strawberry.field(resolver=views.get_customer)
 
 
-schema = strawberry.Schema(query=Query)
-graphql_app = GraphQLRouter(schema)
+graphql_schema = strawberry.Schema(query=Query)
+graphql_app = GraphQLRouter(graphql_schema)  # type: ignore
 
 
 app = FastAPI(title="service--order-history")

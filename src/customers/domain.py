@@ -26,6 +26,7 @@ class Customer:
             event_id=uuid.uuid4(),
             correlation_id=correlation_id,
             customer_id=customer.id,
+            name=customer.name,
             created_at=datetime.datetime.now().replace(tzinfo=datetime.UTC),
         )
         return customer, event

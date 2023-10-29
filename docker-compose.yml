@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   # Applications
-  customers:
+  service-customers:
     build:
       target: development
     ports:
@@ -18,7 +18,7 @@ services:
       AWS_ACCESS_KEY_ID: testing
       AWS_SECRET_ACCESS_KEY: testing
       AWS_ENDPOINT_URL: http://app-localstack:4566
-  orders:
+  service-orders:
     build:
       target: development
     ports:
@@ -34,7 +34,7 @@ services:
       AWS_ACCESS_KEY_ID: testing
       AWS_SECRET_ACCESS_KEY: testing
       AWS_ENDPOINT_URL: http://app-localstack:4566
-  order-history-graphql:
+  service-order-history--graphql:
     build:
       target: development
     ports:
@@ -45,7 +45,7 @@ services:
     restart: always
     environment:
       DATABASE_URL: postgresql+asyncpg://postgres:postgres@app-postgres:5433/postgres
-  order-history-eventconsumer:
+  service-order-history--eventconsumer:
     build:
       target: development
     ports:
@@ -56,7 +56,7 @@ services:
     restart: always
     environment:
       ENVIRONMENT: development
-      DYNAMODB_TABLE_NAME: order-history
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@app-postgres:5433/postgres
       AWS_REGION: us-east-1
       AWS_ACCESS_KEY_ID: testing
       AWS_SECRET_ACCESS_KEY: testing
@@ -69,7 +69,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     ports:
       - 4566:4566
-  dynamodb-admin:
+  app-dynamodb-admin:
     image: aaronshaf/dynamodb-admin:4.6.1
     ports:
       - 8001:8001

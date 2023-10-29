@@ -21,10 +21,12 @@ class CustomerCreated(google.protobuf.message.Message):
     EVENT_ID_FIELD_NUMBER: builtins.int
     CORRELATION_ID_FIELD_NUMBER: builtins.int
     CUSTOMER_ID_FIELD_NUMBER: builtins.int
+    NAME_FIELD_NUMBER: builtins.int
     CREATED_AT_FIELD_NUMBER: builtins.int
     event_id: builtins.str
     correlation_id: builtins.str
     customer_id: builtins.str
+    name: builtins.str
     created_at: builtins.str
     def __init__(
         self,
@@ -32,8 +34,9 @@ class CustomerCreated(google.protobuf.message.Message):
         event_id: builtins.str = ...,
         correlation_id: builtins.str = ...,
         customer_id: builtins.str = ...,
+        name: builtins.str = ...,
         created_at: builtins.str = ...,
     ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["correlation_id", b"correlation_id", "created_at", b"created_at", "customer_id", b"customer_id", "event_id", b"event_id"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["correlation_id", b"correlation_id", "created_at", b"created_at", "customer_id", b"customer_id", "event_id", b"event_id", "name", b"name"]) -> None: ...
 
 global___CustomerCreated = CustomerCreated

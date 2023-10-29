@@ -7,7 +7,7 @@ from pact import Consumer, Format, Like, Pact, Provider, Term
 from tomodachi_testcontainers.utils import get_available_port
 from yarl import URL
 
-from sdk.orders import Order, OrderNotFoundError, OrdersClient, OrderState
+from frontend.orders import Order, OrderNotFoundError, OrdersClient, OrderState
 
 
 @pytest.fixture(scope="module")
@@ -17,7 +17,7 @@ def mock_url() -> URL:
 
 @pytest.fixture(scope="module")
 def pact(mock_url: URL) -> Generator[Pact, None, None]:
-    consumer = Consumer("sdk--rest", version="0.0.1")
+    consumer = Consumer("frontend--rest", version="0.0.1")
     pact = consumer.has_pact_with(
         Provider("service-orders--rest"),
         pact_dir="pacts",

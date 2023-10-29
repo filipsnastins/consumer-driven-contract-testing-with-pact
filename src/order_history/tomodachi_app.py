@@ -2,9 +2,13 @@ import uuid
 
 import structlog
 import tomodachi
+from stockholm import Money
 from tomodachi.envelope.protobuf_base import ProtobufBase
 
-from adapters import proto
+from adapters import proto, sqlalchemy
+from order_history import use_cases
+from order_history.commands import RegisterNewCustomerCommand, RegisterNewOrderCommand, RegisterOrderApprovedCommand
+from order_history.repository import Base, SQLAlchemyOrderHistoryRepository
 from service_layer.tomodachi_bootstrap import TomodachiServiceBase
 
 logger: structlog.stdlib.BoundLogger = structlog.get_logger()
@@ -12,6 +16,16 @@ logger: structlog.stdlib.BoundLogger = structlog.get_logger()
 
 class ServiceOrderHistory(TomodachiServiceBase):
     name = "service--order-history"
+
+    def __init__(self) -> None:
+        super().__init__()
+        self._repository = SQLAlchemyOrderHistoryRepository(sqlalchemy.create_session_factory())
+
+    async def _start_service(self) -> None:
+        engine = sqlalchemy.create_async_engine()
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+        logger.info("database_created")
 
     @tomodachi.aws_sns_sqs(
         topic="customer--created",
@@ -22,7 +36,8 @@ class ServiceOrderHistory(TomodachiServiceBase):
         message_envelope=ProtobufBase,
     )
     async def customer_created_handler(self, data: proto.CustomerCreated, correlation_id: uuid.UUID) -> None:
-        logger.info("customer_created", customer_id=data.customer_id, correlation_id=correlation_id)
+        cmd = RegisterNewCustomerCommand(customer_id=uuid.UUID(data.customer_id), name=data.name)
+        await use_cases.register_new_customer(cmd, self._repository)
 
     @tomodachi.aws_sns_sqs(
         topic="order--created",
@@ -33,9 +48,12 @@ class ServiceOrderHistory(TomodachiServiceBase):
         message_envelope=ProtobufBase,
     )
     async def order_created_handler(self, data: proto.OrderCreated, correlation_id: uuid.UUID) -> None:
-        logger.info(
-            "order_created", order_id=data.order_id, customer_id=data.customer_id, correlation_id=correlation_id
+        cmd = RegisterNewOrderCommand(
+            customer_id=uuid.UUID(data.customer_id),
+            order_id=uuid.UUID(data.order_id),
+            order_total=Money.from_proto(data.order_total).as_decimal(),
         )
+        await use_cases.register_new_order(cmd, self._repository)
 
     @tomodachi.aws_sns_sqs(
         topic="order--approved",
@@ -46,6 +64,5 @@ class ServiceOrderHistory(TomodachiServiceBase):
         message_envelope=ProtobufBase,
     )
     async def order_approved_handler(self, data: proto.OrderApproved, correlation_id: uuid.UUID) -> None:
-        logger.info(
-            "order_approved", order_id=data.order_id, customer_id=data.customer_id, correlation_id=correlation_id
-        )
+        cmd = RegisterOrderApprovedCommand(order_id=uuid.UUID(data.order_id))
+        await use_cases.register_order_approved(cmd, self._repository)
