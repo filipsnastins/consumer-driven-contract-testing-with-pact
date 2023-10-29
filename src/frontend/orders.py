@@ -24,7 +24,7 @@ class Order:
     state: OrderState
 
 
-class OrdersClient:
+class OrderClient:
     def __init__(self, base_url: str) -> None:
         self._client = httpx.AsyncClient(base_url=base_url)
 

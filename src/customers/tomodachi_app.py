@@ -11,6 +11,7 @@ from customers import use_cases, views
 from customers.commands import CreateCustomerCommand, ReserveCustomerCreditCommand
 from customers.domain import CustomerNotFoundError
 from customers.events import CustomerCreatedEvent, CustomerCreditReservedEvent
+from customers.pact import setup_pact_provider_state
 from customers.repository import DynamoDBCustomerRepository
 from service_layer.tomodachi_bootstrap import TomodachiServiceBase
 
@@ -48,6 +49,21 @@ class ServiceCustomers(TomodachiServiceBase):
             return web.json_response(customer.to_dict(), status=200)
         except CustomerNotFoundError:
             return web.json_response({"error": "CUSTOMER_NOT_FOUND"}, status=404)
+
+    @tomodachi.http("POST", r"/_pact/provider_states")
+    async def setup_pact_provider_state_handler(self, request: web.Request, correlation_id: uuid.UUID) -> web.Response:
+        if not self.is_dev_env:
+            return web.json_response({}, status=403)
+        body = await request.json()
+        await setup_pact_provider_state(
+            consumer=body["consumer"],
+            state=body["state"],
+            states=body["states"],
+            correlation_id=correlation_id,
+            repository=self._repository,
+            publisher=self._publisher,
+        )
+        return web.json_response({})
 
     @tomodachi.aws_sns_sqs(
         topic="order--created",

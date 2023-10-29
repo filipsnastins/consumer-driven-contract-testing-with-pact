@@ -7,7 +7,7 @@ from pact import Consumer, Format, Like, Pact, Provider, Term
 from tomodachi_testcontainers.utils import get_available_port
 from yarl import URL
 
-from frontend.orders import Order, OrderNotFoundError, OrdersClient, OrderState
+from frontend.orders import Order, OrderClient, OrderNotFoundError, OrderState
 
 
 @pytest.fixture(scope="module")
@@ -35,12 +35,12 @@ def pact(mock_url: URL) -> Generator[Pact, None, None]:
 
 
 @pytest.fixture(scope="module")
-def orders_client(mock_url: URL) -> OrdersClient:
-    return OrdersClient(str(mock_url))
+def client(mock_url: URL) -> OrderClient:
+    return OrderClient(str(mock_url))
 
 
 @pytest.mark.asyncio()
-async def test_create_order(pact: Pact, orders_client: OrdersClient) -> None:
+async def test_create_order(pact: Pact, client: OrderClient) -> None:
     # Arrange
     expected = {
         "id": Term(Format.Regexes.uuid.value, "f408cf27-8c53-486e-89f6-f0b45355b3ed"),
@@ -63,7 +63,7 @@ async def test_create_order(pact: Pact, orders_client: OrdersClient) -> None:
 
     with pact:
         # Act
-        order = await orders_client.create(
+        order = await client.create(
             customer_id=uuid.UUID("f408cf27-8c53-486e-89f6-f0b45355b3ed"),
             order_total=Decimal("100.99"),
         )
@@ -80,7 +80,7 @@ async def test_create_order(pact: Pact, orders_client: OrdersClient) -> None:
 
 
 @pytest.mark.asyncio()
-async def test_get_non_existing_order(pact: Pact, orders_client: OrdersClient) -> None:
+async def test_get_non_existing_order(pact: Pact, client: OrderClient) -> None:
     # Arrange
     expected = {"error": "ORDER_NOT_FOUND"}
     (
@@ -95,13 +95,13 @@ async def test_get_non_existing_order(pact: Pact, orders_client: OrdersClient) -
     with pact:
         # Act & assert
         with pytest.raises(OrderNotFoundError):
-            await orders_client.get(uuid.UUID("02f0a114-273d-4e40-af9e-129f8e3c193d"))
+            await client.get(uuid.UUID("02f0a114-273d-4e40-af9e-129f8e3c193d"))
 
         pact.verify()
 
 
 @pytest.mark.asyncio()
-async def test_get_order(pact: Pact, orders_client: OrdersClient) -> None:
+async def test_get_order(pact: Pact, client: OrderClient) -> None:
     # Arrange
     expected = {
         "id": Term(Format.Regexes.uuid.value, "f408cf27-8c53-486e-89f6-f0b45355b3ed"),
@@ -121,7 +121,7 @@ async def test_get_order(pact: Pact, orders_client: OrdersClient) -> None:
 
     with pact:
         # Act
-        order = await orders_client.get(uuid.UUID("f408cf27-8c53-486e-89f6-f0b45355b3ed"))
+        order = await client.get(uuid.UUID("f408cf27-8c53-486e-89f6-f0b45355b3ed"))
 
         # Assert
         assert isinstance(order, Order)

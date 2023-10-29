@@ -6,35 +6,34 @@ from unittest.mock import AsyncMock, patch
 import structlog
 
 from adapters.publisher import MessagePublisher
-from orders import use_cases
-from orders.commands import CreateOrderCommand
-from orders.repository import OrderRepository
+from customers import use_cases
+from customers.commands import CreateCustomerCommand
+from customers.repository import CustomerRepository
 
 logger: structlog.stdlib.BoundLogger = structlog.get_logger()
 
 
 class PactProviderStateSetupHandler(Protocol):
     async def __call__(
-        self, correlation_id: uuid.UUID, repository: OrderRepository, publisher: MessagePublisher
+        self, correlation_id: uuid.UUID, repository: CustomerRepository, publisher: MessagePublisher
     ) -> None:
         ...
 
 
-async def mock_order_f408cf27_exists(
-    correlation_id: uuid.UUID, repository: OrderRepository, publisher: MessagePublisher
+async def mock_customer_d3100f4f_exists(
+    correlation_id: uuid.UUID, repository: CustomerRepository, publisher: MessagePublisher
 ) -> None:
-    cmd = CreateOrderCommand(
+    cmd = CreateCustomerCommand(
         correlation_id=correlation_id,
-        customer_id=uuid.uuid4(),
-        order_total=Decimal("100.99"),
+        name="John Doe",
     )
-    with patch("orders.domain.uuid.uuid4", return_value=uuid.UUID("f408cf27-8c53-486e-89f6-f0b45355b3ed")):
-        await use_cases.create_order(cmd, repository, AsyncMock())
-    logger.info("mock_order_f408cf27_exists")
+    with patch("customers.domain.uuid.uuid4", return_value=uuid.UUID("d3100f4f-c8a7-4207-a5e2-40aa122b4b33")):
+        await use_cases.create_customer(cmd, repository, AsyncMock())
+    logger.info("mock_customer_d3100f4f_exists")
 
 
 MAPPING: dict[str, PactProviderStateSetupHandler] = {
-    "An order f408cf27 exists": mock_order_f408cf27_exists,
+    "A customer d3100f4f exists": mock_customer_d3100f4f_exists,
 }
 
 
@@ -43,7 +42,7 @@ async def setup_pact_provider_state(
     state: str,
     states: list[str],
     correlation_id: uuid.UUID,
-    repository: OrderRepository,
+    repository: CustomerRepository,
     publisher: MessagePublisher,
 ) -> None:
     log = logger.bind(consumer=consumer, state=state, states=states)
