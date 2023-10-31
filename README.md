@@ -1,8 +1,41 @@
-# contract-testing-pact-python
+# consumer-driven-contract-testing-with-pact-python
 
-**WIP**
+**Work in progress**
 
 An example of applying Consumer-Driven Contract Testing (CDC) for testing microservice compatibility in isolation.
+
+## System diagram
+
+Generated from Pact Broker network diagram (<http://localhost:9292/integrations>) and manually styled.
+
+```graphviz
+digraph {
+  ranksep=1.5;
+  nodesep=0.5;
+  ratio=auto;
+  overlap=false;
+  concentrate=true;
+  splines=true;
+
+  node [shape=box, style="rounded,filled", fontname="Helvetica", fontsize=12, width=2.5, height=0.75];
+
+  node [fillcolor="#f0f0f0", color="#666666", fontcolor="#000000", fillcolor="#b2d8ff"];
+  edge [fontname="Helvetica", fontsize=10, color="#666666"];
+
+  "service-order-history" [label="Service Order History"];
+  "service-orders" [label="Service Orders"];
+  "service-customers" [label="Service Customers"];
+  "frontend" [label="Frontend"];
+
+  "service-order-history" -> "service-orders" [label="SNS"];
+  "service-customers" -> "service-orders" [label="SNS"];
+  "frontend" -> "service-orders" [label="REST"];
+  "frontend" -> "service-order-history" [label="GraphQL"];
+  "service-orders" -> "service-customers" [label="SNS"];
+  "service-order-history" -> "service-customers" [label="SNS"];
+  "frontend" -> "service-customers" [label="REST"];
+}
+```
 
 ## Development
 
@@ -26,6 +59,8 @@ docker compose up
 ### URLs
 
 - Pact Broker URL: <http://localhost:9292>
+
+  - Export service network graph at: <http://localhost:9292/integrations>
 
 - DynamoDB Admin: <http://localhost:8001>
 
@@ -70,11 +105,18 @@ curl -X POST -H "Content-Type: application/json" -d '{"query": "{getAllCustomers
 
 ### Format and lint code, and run tests
 
+- Format and lint
+
 ```bash
 poetry run format
-
 poetry run lint
+```
 
+- Run tests.
+  Test execution is ordered with `pytest-order` to run Consumer tests first, then Provider tests,
+  because Provider tests depend on the existence of the Consumer pact.
+
+```bash
 poetry run test
-poetry run test-ci
+poetry run test-ci  # with test coverage
 ```
