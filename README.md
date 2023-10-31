@@ -8,34 +8,7 @@ An example of applying Consumer-Driven Contract Testing (CDC) for testing micros
 
 Generated from Pact Broker network diagram (<http://localhost:9292/integrations>) and manually styled.
 
-```graphviz
-digraph {
-  ranksep=1.5;
-  nodesep=0.5;
-  ratio=auto;
-  overlap=false;
-  concentrate=true;
-  splines=true;
-
-  node [shape=box, style="rounded,filled", fontname="Helvetica", fontsize=12, width=2.5, height=0.75];
-
-  node [fillcolor="#f0f0f0", color="#666666", fontcolor="#000000", fillcolor="#b2d8ff"];
-  edge [fontname="Helvetica", fontsize=10, color="#666666"];
-
-  "service-order-history" [label="Service Order History"];
-  "service-orders" [label="Service Orders"];
-  "service-customers" [label="Service Customers"];
-  "frontend" [label="Frontend"];
-
-  "service-order-history" -> "service-orders" [label="SNS"];
-  "service-customers" -> "service-orders" [label="SNS"];
-  "frontend" -> "service-orders" [label="REST"];
-  "frontend" -> "service-order-history" [label="GraphQL"];
-  "service-orders" -> "service-customers" [label="SNS"];
-  "service-order-history" -> "service-customers" [label="SNS"];
-  "frontend" -> "service-customers" [label="REST"];
-}
-```
+![System diagram](docs/system.png)
 
 ## Development
 
