@@ -19,11 +19,11 @@ DEFAULT_OPTS = {
 
 @pytest.fixture(scope="module")
 def service_customers_container(
-    tomodachi_image: DockerImage, moto_container: MotoContainer
+    testcontainers_docker_image: DockerImage, moto_container: MotoContainer
 ) -> Generator[TomodachiContainer, None, None]:
     with (
         TomodachiContainer(
-            image=str(tomodachi_image.id),
+            image=str(testcontainers_docker_image.id),
             edge_port=get_available_port(),
         )
         .with_env("ENVIRONMENT", "autotest")

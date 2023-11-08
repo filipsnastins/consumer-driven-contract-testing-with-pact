@@ -20,7 +20,8 @@ class CustomerModel(Base):
     id: Mapped[str] = mapped_column(String, primary_key=True, index=True)
     name: Mapped[str] = mapped_column(String)
 
-    # FIXME: Async FastAPI and async SQLAlchemy lazy loading didn't work together, so used "joined" eager loading instead
+    # FIXME: Async FastAPI and async SQLAlchemy lazy loading didn't work together,
+    # so used "joined" eager loading instead
     # Not to be used like this in production
     orders: Mapped[list["OrderModel"]] = relationship("OrderModel", back_populates="customer", lazy="joined")
 

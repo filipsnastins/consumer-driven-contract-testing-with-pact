@@ -5,7 +5,8 @@ description = ""
 authors = ["Filips Nastins <nastinsfilips@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = ">=3.11,<3.12"
+aiosqlite = "^0.19.0"
 fastapi = "^0.104.0"
 httpx = "^0.23.3"
 protobuf = "^4.24.4"
@@ -21,7 +22,6 @@ uvicorn = "^0.23.2"
 uvloop = "^0.19.0"
 
 [tool.poetry.group.dev.dependencies]
-aiosqlite = "^0.19.0"
 autoflake = ">=2.2.1"
 bandit = ">=1.7.5"
 black = ">=23.10.0"
@@ -44,7 +44,7 @@ flake8-warnings = ">=0.4.1"
 isort = ">=5.12.0"
 mypy = ">=1.6.1"
 mypy-protobuf = ">=3.5.0"
-pact-python = ">=2.0.1"
+pact-python = ">=2.1.1"
 pre-commit = ">=3.5.0"
 pylint = ">=3.0.1"
 pytest = ">=7.4.2"
@@ -54,7 +54,7 @@ pytest-env = ">=1.0.1"
 pytest-mock = ">=3.12.0"
 pytest-order = "^1.1.0"
 ruff = ">=0.1.1"
-tomodachi-testcontainers = ">=0.8.7"
+tomodachi-testcontainers = ">=0.10.1"
 types-protobuf = ">=4.24.0.2"
 
 [build-system]
@@ -153,7 +153,7 @@ env = [
     "AWS_SESSION_TOKEN=testing",
     # Service configuration
     "ENVIRONMENT=autotest",
-    "DATABASE_URL=sqlite+aiosqlite:///:memory:",
-    "DYNAMODB_TABLE_NAME=autotest-table",
     "AWS_REGION=us-east-1",
+    "DYNAMODB_TABLE_NAME=autotest-table",
+    "DATABASE_URL=sqlite+aiosqlite:///:memory:",
 ]
