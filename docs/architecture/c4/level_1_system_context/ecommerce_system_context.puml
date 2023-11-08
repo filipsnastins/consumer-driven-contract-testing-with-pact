@@ -1,0 +1,14 @@
+@startuml
+!include <C4/C4_Container>
+!include ./person/persons.puml
+
+title System Context Diagram for E-Commerce System
+
+buyerPerson()
+
+System(ecommerceSystem, "E-Commerce System", "System for managing E-Commerce store. \n\nProvides operations on customers and orders, e.g. create new customer, create new order etc.")
+
+Rel_D(buyerPerson, ecommerceSystem, "Register as a customer, create orders, view order history.")
+
+SHOW_LEGEND()
+@enduml

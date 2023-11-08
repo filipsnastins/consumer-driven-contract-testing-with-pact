@@ -1,0 +1,31 @@
+@startuml
+!include <C4/C4_Container>
+!include ../level_1_system_context/person/persons.puml
+!include ./container/containers.puml
+
+title Container Diagram for E-Commerce System
+
+AddRelTag("sync", $lineStyle = SolidLine())
+AddRelTag("async", $lineStyle = DashedLine())
+
+buyerPerson()
+
+System_Boundary(ecommerceSystemBounary, "E-Commerce System", "System") {
+    webFrontendContainer()
+    serviceOrdersContainer()
+    serviceCustomersContainer()
+    serviceOrderHistoryContainer()
+}
+
+Rel(serviceOrders, serviceCustomers, "Receives credit check verification results", "SNS SQS", $tags="async")
+Rel(serviceOrderHistory, serviceOrders, "Recieves order updates", "SNS SQS", $tags="async")
+Rel(serviceOrderHistory, serviceCustomers, "Receives customer updates", "SNS SQS", $tags="async")
+
+Rel(buyerPerson, webFrontend, "Uses", "HTTP")
+
+Rel_R(webFrontend, serviceOrders, "Creates new orders", "JSON/HTTP", $tags="sync")
+Rel_R(webFrontend, serviceCustomers, "Registers as a new customer", "JSON/HTTP", $tags="sync")
+Rel_R(webFrontend, serviceOrderHistory, "Views orders history", "GraphQL/HTTP", $tags="sync")
+
+SHOW_LEGEND()
+@enduml

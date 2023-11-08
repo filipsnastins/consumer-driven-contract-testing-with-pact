@@ -1,0 +1,8 @@
+@startuml
+!include <C4/C4_Container>
+
+!procedure buyerPerson()
+    Person(buyerPerson, "Buyer", "Person who is placing orders to buy goods.")
+!endprocedure
+
+@enduml

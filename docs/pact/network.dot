@@ -23,4 +23,15 @@ digraph {
   "service-orders" -> "service-customers" [label="SNS"];
   "service-order-history" -> "service-customers" [label="SNS"];
   "frontend" -> "service-customers" [label="REST"];
+
+  legend [shape=none, margin=0, fontsize=8, fillcolor="#ffffff" label=<
+    <table border="0" cellborder="1" cellspacing="0">
+      <tr>
+        <td align="center" bgcolor="lightgray"><b>Legend</b></td>
+      </tr>
+      <tr>
+        <td align="left">consumer ---(protocol)---&gt; provider</td>
+      </tr>
+    </table>
+  >];
 }
