@@ -45,7 +45,7 @@ services:
     restart: always
     environment:
       ENVIRONMENT: development
-      DATABASE_URL: postgresql+asyncpg://postgres:postgres@app-postgres:5433/postgres
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@app-postgres/postgres
   service-order-history--eventconsumer:
     build:
       target: development
@@ -57,7 +57,7 @@ services:
     restart: always
     environment:
       ENVIRONMENT: development
-      DATABASE_URL: postgresql+asyncpg://postgres:postgres@app-postgres:5433/postgres
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@app-postgres/postgres
       AWS_REGION: us-east-1
       AWS_ACCESS_KEY_ID: testing
       AWS_SECRET_ACCESS_KEY: testing
@@ -82,10 +82,9 @@ services:
   app-postgres:
     image: postgres
     ports:
-      - 5433:5433
+      - 5433:5432
     healthcheck:
-      test: psql postgres -p 5433 -U postgres --command 'SELECT 1'
-    command: ['-p', '5433']
+      test: ['CMD', 'psql', 'postgres', '-U', 'postgres', '--command', '"SELECT 1"']
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -103,7 +102,7 @@ services:
       PACT_BROKER_ALLOW_PUBLIC_READ: 'true'
       PACT_BROKER_BASIC_AUTH_USERNAME: pactbroker
       PACT_BROKER_BASIC_AUTH_PASSWORD: pactbroker
-      PACT_BROKER_DATABASE_URL: postgres://postgres:postgres@pact-postgres:5434/postgres
+      PACT_BROKER_DATABASE_URL: postgres://postgres:postgres@pact-postgres/postgres
     healthcheck:
       test:
         [
@@ -120,10 +119,9 @@ services:
   pact-postgres:
     image: postgres
     ports:
-      - 5434:5434
+      - 5434:5432
     healthcheck:
-      test: psql postgres -p 5434 -U postgres --command 'SELECT 1'
-    command: ['-p', '5434']
+      test: ['CMD', 'psql', 'postgres', '-U', 'postgres', '--command', '"SELECT 1"']
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres

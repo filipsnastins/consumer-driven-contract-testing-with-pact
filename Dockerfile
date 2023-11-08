@@ -2,10 +2,11 @@ FROM python:3.11.4-slim-buster AS python-base
 WORKDIR /app
 ARG VIRTUAL_ENV=/opt/venv
 RUN addgroup --gid 1001 app && adduser --uid 1000 --gid 1001 app
+# hadolint ignore=DL3008
 RUN apt-get update && \
   apt-get install -y --no-install-recommends \
   build-essential \
-  && rm -rf /var/lib/apt/lists/*  
+  && rm -rf /var/lib/apt/lists/*
 ENV VIRTUAL_ENV=$VIRTUAL_ENV \
   PATH=$VIRTUAL_ENV/bin:$PATH \
   PYTHONDONTWRITEBYTECODE=1 \
