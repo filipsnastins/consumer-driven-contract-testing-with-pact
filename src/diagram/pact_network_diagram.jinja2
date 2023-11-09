@@ -11,20 +11,13 @@ digraph {
   node [fillcolor="#f0f0f0", color="#666666", fontcolor="#000000", fillcolor="#b2d8ff"];
   edge [fontname="Helvetica", fontsize=10, color="#666666"];
 
-  "frontend" [label="Frontend"];
-  "service-customers" [label="Service Customers"];
-  "service-order-history" [label="Service Order History"];
-  "service-orders" [label="Service Orders"];
-  
+  {% for pacticipant in pacticipants -%}
+    "{{ pacticipant.name }}" [label="{{ pacticipant.label }}"];
+  {% endfor %}
 
-  "frontend" -> "service-customers" [label="REST"];
-  "frontend" -> "service-order-history" [label="GraphQL"];
-  "frontend" -> "service-orders" [label="REST"];
-  "service-customers" -> "service-orders" [label="SNS"];
-  "service-order-history" -> "service-customers" [label="SNS"];
-  "service-order-history" -> "service-orders" [label="SNS"];
-  "service-orders" -> "service-customers" [label="SNS"];
-  
+  {% for integration in integrations -%}
+    "{{ integration.consumer.name }}" -> "{{ integration.provider.name }}" [label="{{ integration.protocol }}"];
+  {% endfor %}
 
   legend [shape=none, margin=0, fontsize=8, fillcolor="#ffffff" label=<
     <table border="0" cellborder="1" cellspacing="0">
