@@ -60,9 +60,9 @@ def get_pact_verifier_options() -> PactVerifierOptions:
     repo = git.Repo()
     repo.refs
     return PactVerifierOptions(
-        broker_url=os.environ["PACT_BROKER_BASE_URL"],
-        broker_username=os.getenv("PACT_BROKER_USERNAME"),
-        broker_password=os.getenv("PACT_BROKER_PASSWORD"),
+        broker_url=os.getenv("PACT_BROKER_BASE_URL", "http://localhost:9292"),
+        broker_username=os.getenv("PACT_BROKER_USERNAME", "pactbroker"),
+        broker_password=os.getenv("PACT_BROKER_PASSWORD", "pactbroker"),
         broker_token=os.getenv("PACT_BROKER_TOKEN"),
         consumer_version_selectors=[
             {"mainBranch": True},
