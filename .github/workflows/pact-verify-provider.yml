@@ -3,12 +3,13 @@ name: Pact Verify Provider
 on:
   repository_dispatch:
     types:
-      - contract_requiring_verification_published
+      - 'PactFlow: contract requiring verification published'
 
 jobs:
   build:
     runs-on: ubuntu-latest
     env:
+      DESCRIPTION: ${{ github.event.client_payload.message }}
       DOCKER_BUILDKIT: 1
       GIT_BRANCH_NAME: ${{ github.event.client_payload.branch }}
       GIT_COMMIT: ${{ github.event.client_payload.sha }}
@@ -54,5 +55,5 @@ jobs:
           poetry install --no-interaction --with dev --all-extras
           poetry show --tree
 
-      - name: Run Pact provider verification tests
+      - name: ${{ env.DESCRIPTION }}
         run: pytest -m "provider and pactflow"
