@@ -6,15 +6,9 @@ from pact import Verifier
 from tomodachi_testcontainers import MotoContainer, TomodachiContainer
 from tomodachi_testcontainers.utils import get_available_port
 
-pytestmark = [pytest.mark.provider(), pytest.mark.order(2)]
+from tests.pact_helpers import get_pact_verifier_options
 
-DEFAULT_OPTS = {
-    "broker_url": "http://localhost:9292",
-    "broker_username": "pactbroker",
-    "broker_password": "pactbroker",
-    "publish_verification_results": True,
-    "publish_version": "0.0.1",
-}
+pytestmark = [pytest.mark.provider(), pytest.mark.order(2)]
 
 
 @pytest.fixture(scope="module")
@@ -47,7 +41,7 @@ def verifier(service_orders_container: TomodachiContainer) -> Verifier:
 
 def test_verify_consumer_contracts(verifier: Verifier, service_orders_container: TomodachiContainer) -> None:
     code, _ = verifier.verify_with_broker(
-        **DEFAULT_OPTS,
+        **get_pact_verifier_options(),
         provider_states_setup_url=f"{service_orders_container.get_external_url()}/_pact/provider_states",
     )
     assert code == 0
