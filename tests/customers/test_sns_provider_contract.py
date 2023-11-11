@@ -9,17 +9,9 @@ from pytest_mock import MockerFixture
 from customers import use_cases
 from customers.commands import CreateCustomerCommand, ReserveCustomerCreditCommand
 from tests.fakes import InMemoryCustomerRepository, InMemoryMessagePublisher
-from tests.pact_helpers import proto_to_dict
+from tests.pact_helpers import get_pact_verifier_options, proto_to_dict
 
-pytestmark = [pytest.mark.provider(), pytest.mark.order(2)]
-
-DEFAULT_OPTS = {
-    "broker_url": "http://localhost:9292",
-    "broker_username": "pactbroker",
-    "broker_password": "pactbroker",
-    "publish_verification_results": True,
-    "publish_version": "0.0.1",
-}
+pytestmark = [pytest.mark.provider(), pytest.mark.pactflow(), pytest.mark.order(2)]
 
 
 async def customer_created_message_provider(mocker: MockerFixture) -> dict:
@@ -84,4 +76,4 @@ def test_verify_consumer_contracts(event_loop: AbstractEventLoop, mocker: Mocker
     )
 
     with provider:
-        provider.verify_with_broker(**DEFAULT_OPTS)
+        provider.verify_with_broker(**get_pact_verifier_options())

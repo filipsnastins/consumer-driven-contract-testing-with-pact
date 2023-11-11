@@ -9,7 +9,7 @@ from yarl import URL
 
 from frontend.order_history import Customer, Order, OrderHistoryClient
 
-pytestmark = [pytest.mark.consumer(), pytest.mark.order(1)]
+pytestmark = [pytest.mark.consumer(), pytest.mark.pactflow(), pytest.mark.order(1)]
 
 
 @pytest.fixture(scope="module")
@@ -19,15 +19,9 @@ def mock_url() -> URL:
 
 @pytest.fixture(scope="module")
 def pact(mock_url: URL) -> Generator[Pact, None, None]:
-    consumer = Consumer("frontend--graphql", auto_detect_version_properties=True)
-    pact = consumer.has_pact_with(
+    pact = Consumer("frontend--graphql", auto_detect_version_properties=True).has_pact_with(
         Provider("service-order-history--graphql"),
         pact_dir="pacts",
-        publish_to_broker=True,
-        broker_base_url="http://localhost:9292",
-        broker_username="pactbroker",
-        broker_password="pactbroker",
-        # Mock service configuration
         host_name=str(mock_url.host),
         port=int(mock_url.port or 80),
     )

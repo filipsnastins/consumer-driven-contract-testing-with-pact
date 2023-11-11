@@ -1,20 +1,27 @@
-name: Run Consumer Tests
+name: Run Provider Contract Tests
 
 on:
-  push:
-  pull_request:
+  workflow_run:
+    workflows: [Run Consumer Contract Tests]
+    types:
+      - completed
 
 jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      POETRY_VIRTUALENVS_CREATE: false
       DOCKER_BUILDKIT: 1
+      GIT_COMMIT: ${{ github.sha }}
+      GIT_REF_NAME: ${{ github.ref_name }}
+      PACT_BROKER_BASE_URL: ${{ secrets.PACT_BROKER_BASE_URL }}
+      PACT_BROKER_TOKEN: ${{ secrets.PACT_BROKER_TOKEN }}
+      PACT_PUBLISH_VERIFICATION_RESULTS: true
+      POETRY_VIRTUALENVS_CREATE: false
+      PYTHONPATH: src:$PYTHONPATH
     strategy:
       max-parallel: 1
       matrix:
         python-version: ['3.11']
-
     steps:
       - uses: actions/checkout@v4
 
@@ -44,5 +51,5 @@ jobs:
           poetry install --no-interaction --with dev --all-extras
           poetry show --tree
 
-      - name: Run consumer contract tests
-        run: pytest -m "consumer"
+      - name: Run Pact provider contract tests
+        run: pytest -m "provider and pactflow"
