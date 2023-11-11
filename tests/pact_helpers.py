@@ -58,12 +58,12 @@ class PactVerifierOptions(TypedDict):
 
 def get_pact_verifier_options() -> PactVerifierOptions:
     repo = git.Repo()
-    repo.refs
+    broker_token = os.getenv("PACT_BROKER_TOKEN")
     return PactVerifierOptions(
         broker_url=os.getenv("PACT_BROKER_BASE_URL", "http://localhost:9292"),
-        broker_username=os.getenv("PACT_BROKER_USERNAME", "pactbroker"),
-        broker_password=os.getenv("PACT_BROKER_PASSWORD", "pactbroker"),
-        broker_token=os.getenv("PACT_BROKER_TOKEN"),
+        broker_username=None if broker_token else os.getenv("PACT_BROKER_USERNAME", "pactbroker"),
+        broker_password=None if broker_token else os.getenv("PACT_BROKER_PASSWORD", "pactbroker"),
+        broker_token=broker_token,
         consumer_version_selectors=[
             {"mainBranch": True},
             {"matchingBranch": True},
@@ -71,7 +71,7 @@ def get_pact_verifier_options() -> PactVerifierOptions:
         ],
         publish_verification_results=True if os.getenv("PACT_PUBLISH_VERIFICATION_RESULTS") else False,
         publish_version=os.getenv("GIT_COMMIT") or repo.head.object.hexsha,
-        provider_version_branch=os.getenv("GIT_REF_NAME") or repo.active_branch.name,
+        provider_version_branch=os.getenv("GIT_BRANCH_NAME") or repo.active_branch.name,
         enable_pending=True,
         verbose=True,
     )
