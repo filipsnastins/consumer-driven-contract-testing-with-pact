@@ -1,6 +1,9 @@
 name: Pact Verify Provider
 
 on:
+  repository_dispatch:
+    types:
+      - contract_requiring_verification_published
   workflow_dispatch:
     inputs:
       pact_url:
@@ -38,11 +41,11 @@ jobs:
         python-version: ['3.11']
 
     steps:
-      - name: Checkout default branch (user run)
+      - name: Checkout default branch (manual workflow run)
         uses: actions/checkout@v4
         if: ${{ inputs.pact_url }}
 
-      - name: Checkout specific commit (webhook trigger)
+      - name: Checkout specific commit (workflow triggered by a webhook)
         uses: actions/checkout@v4
         if: ${{ github.event.client_payload.pact_url }}
         with:
@@ -74,5 +77,5 @@ jobs:
           poetry install --no-interaction --with dev --all-extras
           poetry show --tree
 
-      - name: Run Pact provider contract tests
+      - name: Run Pact provider verification tests
         run: pytest -m "${{ env.PACT_PROVIDER }} and provider and pactflow"
