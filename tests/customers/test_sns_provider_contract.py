@@ -11,7 +11,7 @@ from customers.commands import CreateCustomerCommand, ReserveCustomerCreditComma
 from tests.fakes import InMemoryCustomerRepository, InMemoryMessagePublisher
 from tests.pact_helpers import proto_to_dict
 
-pytestmark = pytest.mark.order(2)
+pytestmark = [pytest.mark.provider(), pytest.mark.order(2)]
 
 DEFAULT_OPTS = {
     "broker_url": "http://localhost:9292",

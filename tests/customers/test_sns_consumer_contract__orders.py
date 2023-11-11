@@ -12,7 +12,7 @@ from customers.tomodachi_app import ServiceCustomers
 from tests.fakes import InMemoryCustomerRepository, InMemoryMessagePublisher
 from tests.pact_helpers import create_proto_from_pact
 
-pytestmark = pytest.mark.order(1)
+pytestmark = [pytest.mark.consumer(), pytest.mark.order(1)]
 
 
 @pytest.fixture()

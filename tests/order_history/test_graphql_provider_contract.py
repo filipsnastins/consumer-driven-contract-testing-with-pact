@@ -7,7 +7,7 @@ from tomodachi_testcontainers.utils import get_available_port
 
 from tests.containers import FastAPIContainer
 
-pytestmark = pytest.mark.order(2)
+pytestmark = [pytest.mark.provider(), pytest.mark.order(2)]
 
 DEFAULT_OPTS = {
     "broker_url": "http://localhost:9292",

@@ -13,7 +13,6 @@ jinja2 = "^3.1.2"
 protobuf = "^4.24.4"
 pydantic = "^2.4.2"
 pydantic-settings = "^2.0.3"
-requests = "^2.31.0"
 sqlalchemy = { extras = ["postgresql-asyncpg"], version = "^2.0.22" }
 stockholm = "^0.5.6"
 strawberry-graphql = { extras = ["fastapi"], version = "^0.211.1" }
@@ -58,7 +57,6 @@ pytest-order = "^1.1.0"
 ruff = ">=0.1.1"
 tomodachi-testcontainers = ">=0.10.2"
 types-protobuf = ">=4.24.0.2"
-types-requests = ">=2.31.0.2"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
@@ -159,4 +157,8 @@ env = [
     "AWS_REGION=us-east-1",
     "DYNAMODB_TABLE_NAME=autotest-table",
     "DATABASE_URL=sqlite+aiosqlite:///:memory:",
+]
+markers = [
+    "consumer: consumer contract test",
+    "provider: provider contract test",
 ]
