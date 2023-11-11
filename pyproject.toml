@@ -160,6 +160,12 @@ env = [
     "DATABASE_URL=sqlite+aiosqlite:///:memory:",
 ]
 markers = [
+    # Application markers
+    "customers: service-customers tests",
+    "frontend: frontend tests",
+    "order_history: service-order-history tests",
+    "orders: service-orders tests",
+    # Pact markers
     "consumer: consumer contract test",
     "provider: provider contract test",
     "pactflow: subset of tests running with PatcFlow; due to 5 integration limit in PactFlow free plan",
