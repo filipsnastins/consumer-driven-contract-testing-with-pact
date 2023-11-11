@@ -15,12 +15,11 @@ pytestmark = pytest.mark.order(1)
 
 @pytest.fixture()
 def pact() -> MessagePact:
-    return MessageConsumer("service-order-history--sns", version="0.0.1").has_pact_with(
+    return MessageConsumer(
+        "service-order-history--sns",
+        auto_detect_version_properties=True,
+    ).has_pact_with(
         Provider("service-customers--sns"),
-        publish_to_broker=True,
-        broker_base_url="http://localhost:9292",
-        broker_username="pactbroker",
-        broker_password="pactbroker",
         pact_dir="pacts",
     )
 

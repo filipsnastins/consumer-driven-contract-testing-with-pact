@@ -18,15 +18,9 @@ def mock_url() -> URL:
 
 @pytest.fixture(scope="module")
 def pact(mock_url: URL) -> Generator[Pact, None, None]:
-    consumer = Consumer("frontend--rest", version="0.0.1")
-    pact = consumer.has_pact_with(
+    pact = Consumer("frontend--rest", auto_detect_version_properties=True).has_pact_with(
         Provider("service-customers--rest"),
         pact_dir="pacts",
-        publish_to_broker=True,
-        broker_base_url="http://localhost:9292",
-        broker_username="pactbroker",
-        broker_password="pactbroker",
-        # Mock service configuration
         host_name=str(mock_url.host),
         port=int(mock_url.port or 80),
     )

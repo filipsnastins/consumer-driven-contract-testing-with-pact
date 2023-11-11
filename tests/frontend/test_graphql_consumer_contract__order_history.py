@@ -19,7 +19,7 @@ def mock_url() -> URL:
 
 @pytest.fixture(scope="module")
 def pact(mock_url: URL) -> Generator[Pact, None, None]:
-    consumer = Consumer("frontend--graphql", version="0.0.1")
+    consumer = Consumer("frontend--graphql", auto_detect_version_properties=True)
     pact = consumer.has_pact_with(
         Provider("service-order-history--graphql"),
         pact_dir="pacts",
