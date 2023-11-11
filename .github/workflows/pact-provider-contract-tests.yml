@@ -1,9 +1,10 @@
 name: Run Provider Contract Tests
 
 on:
-  push:
-    branches: [main]
-  pull_request:
+  workflow_run:
+    workflows: ['Run Consumer Contract Tests']
+    types:
+      - completed
 
 jobs:
   build:
