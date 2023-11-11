@@ -40,8 +40,8 @@ jobs:
           curl -sSL https://install.python-poetry.org | POETRY_HOME="$HOME/.poetry" python - --yes
           echo "$HOME/.poetry/bin" >> $GITHUB_PATH
 
-          - name: Test Poetry installation
-          run: poetry --version
+      - name: Test Poetry installation
+        run: poetry --version
 
       - name: Install Pact Broker CLI
         run: |
