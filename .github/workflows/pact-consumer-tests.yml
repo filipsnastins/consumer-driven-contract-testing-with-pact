@@ -1,4 +1,4 @@
-name: Run Consumer Tests
+name: Run Consumer Contract Tests
 
 on:
   push:
@@ -11,6 +11,8 @@ jobs:
     env:
       PYTHONPATH: src:$PYTHONPATH
       POETRY_VIRTUALENVS_CREATE: false
+      PACT_BROKER_BASE_URL: ${{ secrets.PACT_BROKER_BASE_URL }}
+      PACT_BROKER_TOKEN: ${{ secrets.PACT_BROKER_TOKEN }}
       DOCKER_BUILDKIT: 1
     strategy:
       max-parallel: 1
@@ -38,20 +40,21 @@ jobs:
           curl -sSL https://install.python-poetry.org | POETRY_HOME="$HOME/.poetry" python - --yes
           echo "$HOME/.poetry/bin" >> $GITHUB_PATH
 
-      - name: Test Poetry installation
-        run: poetry --version
+          - name: Test Poetry installation
+          run: poetry --version
+
+      - name: Install Pact Broker CLI
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/pact-foundation/pact-ruby-standalone/master/install.sh | PACT_CLI_VERSION=v2.0.10 bash
+          echo "$HOME/pact/bin//pact-broker" >> $GITHUB_PATH
 
       - name: Install dependencies
         run: |
           poetry install --no-interaction --with dev --all-extras
           poetry show --tree
 
-      - name: Run consumer contract tests
+      - name: Run Pact consumer contract tests
         run: pytest -m "consumer"
 
-      - name: Publish consumer contract tests
-        run: |
-          pact-broker publish --auto-detect-version-properties \
-            --broker-base-url ${{ secrets.PACT_BROKER_BASE_URL }} \
-            --broker-token ${{ secrets.PACT_BROKER_TOKEN }} \
-            pacts
+      - name: Publish Pacts to PactFlow
+        run: pact-broker publish --auto-detect-version-properties pacts
