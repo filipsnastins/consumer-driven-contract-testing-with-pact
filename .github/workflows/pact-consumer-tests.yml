@@ -48,3 +48,10 @@ jobs:
 
       - name: Run consumer contract tests
         run: pytest -m "consumer"
+
+      - name: Publish consumer contract tests
+        run: |
+          pact-broker publish --auto-detect-version-properties \
+            --broker-base-url ${{ secrets.PACT_BROKER_BASE_URL }} \
+            --broker-token ${{ secrets.PACT_BROKER_TOKEN }} \
+            pacts
