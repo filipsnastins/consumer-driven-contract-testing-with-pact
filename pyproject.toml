@@ -161,4 +161,5 @@ env = [
 markers = [
     "consumer: consumer contract test",
     "provider: provider contract test",
+    "pactflow: subset of tests running with PatcFlow; due to 5 integration limit in PactFlow free plan",
 ]

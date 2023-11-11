@@ -54,7 +54,7 @@ jobs:
           poetry show --tree
 
       - name: Run Pact consumer contract tests
-        run: pytest -m "consumer"
+        run: pytest -m "consumer and pactflow"
 
       - name: Publish Pacts to PactFlow
         run: pact-broker publish --auto-detect-version-properties pacts
