@@ -22,7 +22,6 @@ def pact(mock_url: URL) -> Generator[Pact, None, None]:
     pact = Consumer("frontend--rest", auto_detect_version_properties=True).has_pact_with(
         Provider("service-orders--rest"),
         pact_dir="pacts",
-        # Mock service configuration
         host_name=str(mock_url.host),
         port=int(mock_url.port or 80),
     )

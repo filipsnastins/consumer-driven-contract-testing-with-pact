@@ -2,13 +2,14 @@ name: Run Consumer Tests
 
 on:
   push:
+    branches: [main]
   pull_request:
 
 jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      PYTHONPATH: src:tests:$PYTHONPATH
+      PYTHONPATH: src:$PYTHONPATH
       POETRY_VIRTUALENVS_CREATE: false
       DOCKER_BUILDKIT: 1
     strategy:
