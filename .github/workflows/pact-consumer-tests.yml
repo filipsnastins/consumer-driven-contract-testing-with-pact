@@ -8,6 +8,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
+      PYTHONPATH: src:tests:$PYTHONPATH
       POETRY_VIRTUALENVS_CREATE: false
       DOCKER_BUILDKIT: 1
     strategy:
