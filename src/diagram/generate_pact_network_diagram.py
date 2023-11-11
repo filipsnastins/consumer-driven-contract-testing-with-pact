@@ -37,8 +37,8 @@ import string
 from dataclasses import dataclass
 from pathlib import Path
 
+import httpx
 import jinja2
-import requests
 
 PROTOCOL_LETTER_CASE_MAP = {
     "graphql": "GraphQL",
@@ -89,7 +89,7 @@ def _map_integration_protocol(consumer_name: str, provider_name: str) -> str:
 
 
 def get_pact_pacticipants(pact_broker_url: str) -> list[Pacticipant]:
-    response = requests.get(f"{pact_broker_url}/pacticipants", headers={"Accept": "application/hal+json"})
+    response = httpx.get(f"{pact_broker_url}/pacticipants", headers={"Accept": "application/hal+json"})
     response.raise_for_status()
     pacticipants = list(
         {Pacticipant.create(name=pacticipant["name"]) for pacticipant in response.json()["_embedded"]["pacticipants"]}
@@ -98,7 +98,7 @@ def get_pact_pacticipants(pact_broker_url: str) -> list[Pacticipant]:
 
 
 def get_pact_integrations(pact_broker_url: str) -> list[Integration]:
-    response = requests.get(f"{pact_broker_url}/integrations", headers={"Accept": "application/hal+json"})
+    response = httpx.get(f"{pact_broker_url}/integrations", headers={"Accept": "application/hal+json"})
     response.raise_for_status()
     integrations = list(
         {
