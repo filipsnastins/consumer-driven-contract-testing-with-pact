@@ -11,7 +11,7 @@ from orders.commands import ApproveOrderCommand, CreateOrderCommand
 from tests.fakes import InMemoryMessagePublisher, InMemoryOrderRepository
 from tests.pact_helpers import get_pact_verifier_options, proto_to_dict
 
-pytestmark = [pytest.mark.provider(), pytest.mark.pactflow(), pytest.mark.order(2)]
+pytestmark = [pytest.mark.orders(), pytest.mark.provider(), pytest.mark.pactflow(), pytest.mark.order(2)]
 
 
 async def order_created_message_provider() -> dict:

@@ -8,7 +8,7 @@ from yarl import URL
 
 from frontend.customers import Customer, CustomerClient, CustomerNotFoundError
 
-pytestmark = [pytest.mark.consumer(), pytest.mark.pactflow(), pytest.mark.order(1)]
+pytestmark = [pytest.mark.frontend(), pytest.mark.consumer(), pytest.mark.pactflow(), pytest.mark.order(1)]
 
 
 @pytest.fixture(scope="module")
