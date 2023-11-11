@@ -10,8 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       DOCKER_BUILDKIT: 1
+      GIT_BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
       GIT_COMMIT: ${{ github.sha }}
-      GIT_REF_NAME: ${{ github.ref_name }}
       PACT_BROKER_BASE_URL: ${{ secrets.PACT_BROKER_BASE_URL }}
       PACT_BROKER_TOKEN: ${{ secrets.PACT_BROKER_TOKEN }}
       PACT_PUBLISH_VERIFICATION_RESULTS: true
