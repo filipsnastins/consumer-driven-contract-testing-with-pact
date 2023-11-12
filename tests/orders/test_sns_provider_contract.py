@@ -61,7 +61,13 @@ async def order_approved_message_provider(mocker: MockerFixture) -> dict:
     return proto_to_dict(message.to_proto())
 
 
-@pytest.mark.parametrize("consumer", ["service-customers--sns"])
+@pytest.mark.parametrize(
+    "consumer",
+    [
+        "service-customers--sns",
+        "service-order-history--sns",
+    ],
+)
 def test_verify_consumer_contracts(event_loop: AbstractEventLoop, mocker: MockerFixture, consumer: str) -> None:
     provider = MessageProvider(
         message_providers={

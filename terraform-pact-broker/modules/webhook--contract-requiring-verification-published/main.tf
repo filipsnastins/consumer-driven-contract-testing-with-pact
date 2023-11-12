@@ -20,7 +20,7 @@ resource "pact_webhook" "default" {
     }
     body = <<EOF
 {
-  "event_type": "PactFlow: contract requiring verification published",
+  "event_type": "Pact: contract requiring verification published",
   "client_payload": {
     "pytest_provider_selector": "${var.pytest_provider_selector}",
     "pact_url": "$${pactbroker.pactUrl}",
