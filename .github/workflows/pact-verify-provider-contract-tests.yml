@@ -75,7 +75,7 @@ jobs:
         run: pytest -m "provider and pactflow"
         if: ${{ env.PACT_PROVIDER == 'all' }}
 
-      - name: ${{ github.event.client_payload.message || format('Run Pact provider contract tests for provider: {0}', env.PACT_PROVIDER) }}
+      - name: ${{ github.event.client_payload.message || 'Run Pact provider contract tests (user run)' }}
         run: pytest -m "provider and pactflow and ${{ env.PACT_PROVIDER }}"
         if: ${{ env.PACT_PROVIDER != 'all' }}
         env:
