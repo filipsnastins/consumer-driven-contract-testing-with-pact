@@ -9,6 +9,7 @@ on:
       provider:
         type: choice
         description: Provider name
+        default: null
         options:
           - customers
           - frontend
