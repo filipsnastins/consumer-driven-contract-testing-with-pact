@@ -1,24 +1,21 @@
-name: Pact Verify Provider
+name: Pact - Consumer Contract Tests
 
 on:
-  repository_dispatch:
-    types:
-      - 'PactFlow: contract requiring verification published'
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      DESCRIPTION: ${{ github.event.client_payload.message }}
       DOCKER_BUILDKIT: 1
-      GIT_BRANCH_NAME: ${{ github.event.client_payload.branch }}
-      GIT_COMMIT: ${{ github.event.client_payload.sha }}
       PACT_BROKER_BASE_URL: ${{ secrets.PACT_BROKER_BASE_URL }}
       PACT_BROKER_TOKEN: ${{ secrets.PACT_BROKER_TOKEN }}
       PACT_PUBLISH_VERIFICATION_RESULTS: true
       POETRY_VIRTUALENVS_CREATE: false
       PYTHONPATH: src:$PYTHONPATH
-
     strategy:
       max-parallel: 1
       matrix:
@@ -26,8 +23,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ env.GIT_COMMIT }}
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
@@ -42,6 +37,11 @@ jobs:
           key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
           restore-keys: ${{ runner.os }}-poetry-
 
+      - name: Install Pact Broker CLI
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/pact-foundation/pact-ruby-standalone/master/install.sh | PACT_CLI_VERSION=v2.0.10 bash
+          echo "$HOME/pact/bin/pact-broker" >> $GITHUB_PATH
+
       - name: Install Poetry
         run: |
           curl -sSL https://install.python-poetry.org | POETRY_HOME="$HOME/.poetry" python - --yes
@@ -55,5 +55,11 @@ jobs:
           poetry install --no-interaction --with dev --all-extras
           poetry show --tree
 
-      - name: ${{ env.DESCRIPTION }}
-        run: pytest -m "provider and pactflow"
+      - name: Run Pact consumer contract tests
+        run: pytest -m "consumer and pactflow"
+        env:
+          GIT_BRANCH: ${{ github.head_ref || github.ref_name }}
+          GIT_COMMIT: ${{ github.sha }}
+
+      - name: Publish Pacts to PactFlow
+        run: pact-broker publish --auto-detect-version-properties pacts
