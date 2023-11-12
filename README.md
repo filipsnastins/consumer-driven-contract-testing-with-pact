@@ -2,15 +2,15 @@
 
 ![Run Pact Contract Tests](https://github.com/filipsnastins/consumer-driven-contract-testing-with-pact-python/workflows/Run%20Pact%20Contract%20Tests/badge.svg)
 
-![Can I deploy Status](https://filipsnastins.pactflow.io/pacticipants/frontend--graphql/branches/main/latest-version/can-i-deploy/to-environment/production/badge?label=can-i-deploy+frontend--graphql)
+![Can I deploy Status](https://filipsnastins.pactflow.io/pacts/provider/service-customers--rest/consumer/frontend--rest/latest/badge.svg)
 
-![Can I deploy Status](https://filipsnastins.pactflow.io/pacticipants/frontend--rest/branches/main/latest-version/can-i-deploy/to-environment/production/badge?label=can-i-deploy+frontend--rest)
+![Can I deploy Status](https://filipsnastins.pactflow.io/pacts/provider/service-customers--sns/consumer/service-orders--sns/latest/badge.svg)
 
-![Can I deploy Status](https://filipsnastins.pactflow.io/pacticipants/service-customers--sns/branches/main/latest-version/can-i-deploy/to-environment/production/badge?label=can-i-deploy+service-customers--sns)
+![Can I deploy Status](https://filipsnastins.pactflow.io/pacts/provider/service-order-history--graphql/consumer/frontend--graphql/latest/badge.svg)
 
-![Can I deploy Status](https://filipsnastins.pactflow.io/pacticipants/service-order-history--sns/branches/main/latest-version/can-i-deploy/to-environment/production/badge?label=can-i-deploy+service-order-history--sns)
+![Can I deploy Status](https://filipsnastins.pactflow.io/pacts/provider/service-orders--sns/consumer/service-customers--sns/latest/badge.svg)
 
-![Can I deploy Status](https://filipsnastins.pactflow.io/pacticipants/service-orders--sns/branches/main/latest-version/can-i-deploy/to-environment/production/badge?label=can-i-deploy+service-orders--sns)
+![Can I deploy Status](https://filipsnastins.pactflow.io/pacts/provider/service-orders--sns/consumer/service-order-history--sns/latest/badge.svg)
 
 An example of applying Consumer-Driven Contract Testing (CDC) for testing microservice compatibility in isolation.
 

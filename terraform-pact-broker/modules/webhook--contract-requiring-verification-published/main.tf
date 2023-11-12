@@ -26,7 +26,7 @@ resource "pact_webhook" "default" {
     "pact_url": "$${pactbroker.pactUrl}",
     "sha": "$${pactbroker.providerVersionNumber}",
     "branch": "$${pactbroker.providerVersionBranch}",
-    "message": "Verify changed pact for '$${pactbroker.consumerName}' version '$${pactbroker.consumerVersionNumber}' branch '$${pactbroker.consumerVersionBranch}' by '$${pactbroker.providerVersionNumber}' ($${pactbroker.providerVersionDescriptions})"
+    "message": "Verify changed pact for '$${pactbroker.consumerName}' version '$${pactbroker.consumerVersionNumber}' branch '$${pactbroker.consumerVersionBranch}' by '$${pactbroker.providerVersionNumber}' ($${pactbroker.providerVersionDescriptions}) (workflow dispatch)"
   }
 }
 EOF
