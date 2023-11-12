@@ -9,7 +9,6 @@ on:
       provider:
         type: choice
         description: Provider name
-        required: true
         options:
           - customers
           - frontend
@@ -72,6 +71,11 @@ jobs:
 
       - name: ${{ github.event.client_payload.message || 'Run Pact provider contract tests' }}
         run: pytest -m "${{ env.PACT_PROVIDER }} and provider and pactflow"
+        if: ${{ env.PACT_PROVIDER }}
         env:
           GIT_BRANCH: ${{ github.event.client_payload.branch }}
           GIT_COMMIT: ${{ github.event.client_payload.sha }}
+
+      - name: Run Pact provider contract tests for all providers
+        run: pytest -m "provider and pactflow"
+        if: ${{ !env.PACT_PROVIDER }}
