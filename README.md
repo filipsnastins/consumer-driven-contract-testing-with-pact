@@ -1,4 +1,6 @@
-# Consumer-Driven Contract Testing (CDC) with Pact
+# Consumer-Driven Contract Testing with Pact
+
+**Work-in-progress.**
 
 ![Can I deploy Status](https://filipsnastins.pactflow.io/pacts/provider/service-customers--rest/consumer/frontend--rest/latest/badge.svg)
 
@@ -12,11 +14,11 @@
 
 An example of applying Consumer-Driven Contract Testing (CDC) for testing microservice compatibility in isolation.
 
-- [Consumer-Driven Contract Testing (CDC) with Pact](#consumer-driven-contract-testing-cdc-with-pact)
+- [Consumer-Driven Contract Testing with Pact](#consumer-driven-contract-testing-with-pact)
   - [What is Contract Testing](#what-is-contract-testing)
   - [Consumer-Driven Contract Testing](#consumer-driven-contract-testing)
   - [Pact as a Consumer-Driven Contract Testing Tool](#pact-as-a-consumer-driven-contract-testing-tool)
-  - [Example Application Architecture](#example-application-architecture)
+  - [Example Application Architecture (C4)](#example-application-architecture-c4)
     - [System Context Diagram](#system-context-diagram)
     - [Container Diagram](#container-diagram)
   - [Using Pact for Testing the Example Application](#using-pact-for-testing-the-example-application)
@@ -27,7 +29,7 @@ An example of applying Consumer-Driven Contract Testing (CDC) for testing micros
   - [References](#references)
   - [Development](#development)
     - [Example Application's Sample Requests](#example-applications-sample-requests)
-    - [URLs](#urls)
+    - [Links](#links)
     - [Development Commands](#development-commands)
 
 ## What is Contract Testing
@@ -38,7 +40,7 @@ An example of applying Consumer-Driven Contract Testing (CDC) for testing micros
 ## Consumer-Driven Contract Testing
 
 - [ ] Consumer-driven contract testing as a collaboration technique
-  - Fostering clear lines of communication and collaboration, between microservices and teams that consume them.
+  - Fostering clear lines of communication and collaboration, between microservices and teams that consume them
   - Consumer-driven contract tests make communication between the teams explicit.
   - The explicit reminder of [Conway’s Law](https://martinfowler.com/bliki/ConwaysLaw.html).
   - Agile stories are often referred to as a placeholder for a conversation. CDCs are just like that
@@ -49,7 +51,7 @@ An example of applying Consumer-Driven Contract Testing (CDC) for testing micros
 - [ ] Best practices when writing contracts
 - [ ] Testing syntax vs semantics
 
-## Example Application Architecture
+## Example Application Architecture (C4)
 
 The example application is a made-up e-commerce system built as microservices.
 
@@ -124,7 +126,7 @@ docker compose up
   The list of contracts should be empty because we haven't run any tests yet.
 
 - Run `consumer` tests first (remember about consumer-driven).
-  Pact will generate contract files in `pacts` directory.
+  Pact will generate contract files and save them in the `pacts` directory.
 
 ```bash
 poetry run pytest -m "consumer"
@@ -134,7 +136,7 @@ poetry run pytest -m "consumer"
   we haven't published contracts from `pacts` directory to the Pact Broker yet.
 
 - Publish contracts from the `pacts` directory to the local Pact Broker.
-  _Note:_ don't store Pact Broker credentials in plain text, this project is just an example.
+  **Note: don't store your Pact Broker credentials in plain text;** this project is just an example.
 
 ```bash
 pact-broker publish --auto-detect-version-properties \
@@ -155,7 +157,7 @@ pact-broker publish --auto-detect-version-properties \
   Verification results will be published back to the Pact Broker
   because `PACT_PUBLISH_VERIFICATION_RESULTS` environment variable is set to `true`.
   Usually, you would publish test results to the Pact Broker only in CI/CD pipeline,
-  so omit the environment variable when running tests locally.
+  so when working on a production project, omit the environment variable when running tests locally.
 
 ```bash
 PACT_PUBLISH_VERIFICATION_RESULTS=true poetry run pytest -m "provider"
@@ -204,7 +206,7 @@ pact-broker publish --auto-detect-version-properties pacts
 
 - Verify Pacts and publish verification results.
   Usually, you would publish test results to the Pact Broker only in CI/CD pipeline,
-  so omit the environment variable when running tests locally.
+  so when working on a production project, omit the environment variable when running tests locally.
 
 ```bash
 PACT_PUBLISH_VERIFICATION_RESULTS=true pytest -m "provider and pactflow"
@@ -216,18 +218,20 @@ PACT_PUBLISH_VERIFICATION_RESULTS=true pytest -m "provider and pactflow"
 
 - [ ] From the simplest way of committing Pact contract file to the provider
       repository to running Pact in CI pipeline with webhook integration.
+- [ ] Using Can-I-Deploy
+- [ ] Configuring Pact Broker/PactFlow with Terraform
 
 ## References
 
-- <https://docs.pact.io/>
-- <https://pactflow.io/blog/the-case-for-contract-testing-protobufs-grpc-avro/> - the need for contract testing
-  even when using Protobuf
+- <https://docs.pact.io>
+- <https://pactflow.io/blog/the-case-for-contract-testing-protobufs-grpc-avro> - the need for contract testing
+  even when using Protobuf.
 
 ## Development
 
 ### Example Application's Sample Requests
 
-- Create customer
+- Create customer.
 
 ```bash
 curl -X POST --header "Content-Type: application/json" -d '{
@@ -235,13 +239,13 @@ curl -X POST --header "Content-Type: application/json" -d '{
 }' http://localhost:9701/customer
 ```
 
-- Get customer
+- Get customer.
 
 ```bash
 curl http://localhost:9701/customer/d5c6999b-9ee3-4ba1-aec0-6fbe8d9d8636
 ```
 
-- Create order
+- Create order.
 
 ```bash
 curl -X POST --header "Content-Type: application/json" -d '{
@@ -250,19 +254,19 @@ curl -X POST --header "Content-Type: application/json" -d '{
 }' http://localhost:9702/order
 ```
 
-- Get order
+- Get order.
 
 ```bash
 curl http://localhost:9702/order/8fccc85c-bbdd-47fb-b6c9-c5ed9a8d88df
 ```
 
-- Get order history for all customers
+- Get order history for all customers.
 
 ```bash
 curl -X POST -H "Content-Type: application/json" -d '{"query": "{getAllCustomers {id name orders {id orderTotal state}}}"}' http://localhost:9703/graphql
 ```
 
-### URLs
+### Links
 
 - Pact Broker: <http://localhost:9292>
 
@@ -272,7 +276,7 @@ curl -X POST -H "Content-Type: application/json" -d '{"query": "{getAllCustomers
 
 ### Development Commands
 
-- Generate Protobuf with [buf](https://buf.build)
+- Generate Protobuf code with [buf](https://buf.build).
 
 ```bash
 brew install bufbuild/buf/buf
@@ -281,7 +285,7 @@ cd src/adapters/proto
 buf generate .
 ```
 
-- Format and lint code
+- Format and lint code.
 
 ```bash
 poetry run format
@@ -289,7 +293,7 @@ poetry run lint
 ```
 
 - Run tests.
-  Test execution is ordered with `pytest-order` to run `consumer` tests first, then `provider` tests.
+  Test execution order is configured with `pytest-order` to run `consumer` tests first, then `provider` tests.
 
 ```bash
 poetry run test
