@@ -3,7 +3,7 @@ name: Pact - Verify Provider Contract Tests
 on:
   repository_dispatch:
     types:
-      - 'Pact: contract requiring verification published'
+      - 'PactFlow: contract requiring verification published'
   workflow_dispatch:
     inputs:
       provider:
@@ -26,6 +26,9 @@ jobs:
       PACT_BROKER_TOKEN: ${{ secrets.PACT_BROKER_TOKEN }}
       PACT_PROVIDER: ${{ inputs.provider || github.event.client_payload.pytest_provider_selector }}
       PACT_PUBLISH_VERIFICATION_RESULTS: true
+      PACT_USER_RUN_ALL_PROVIDERS_MESSAGE: Run Pact provider contract tests for all providers (user run)
+      PACT_USER_RUN_SINGLE_PROVIDER_MESSAGE: "Run Pact provider contract tests for provider: '${{ inputs.provider }}' (user run)"
+      PACT_WORKFLOW_DISPATCH_MESSAGE: '${{ github.event.client_payload.message }} (workflow dispatch)'
       POETRY_VIRTUALENVS_CREATE: false
       PYTHONPATH: src:$PYTHONPATH
 
@@ -71,11 +74,11 @@ jobs:
           poetry install --no-interaction --with dev --all-extras
           poetry show --tree
 
-      - name: Run Pact provider contract tests for all providers
+      - name: ${{ env.PACT_USER_RUN_ALL_PROVIDERS_MESSAGE }}
         run: pytest -m "provider and pactflow"
         if: ${{ env.PACT_PROVIDER == 'all' }}
 
-      - name: ${{ github.event.client_payload.message || 'Run Pact provider contract tests (user run)' }}
+      - name: ${{ env.PACT_WORKFLOW_DISPATCH_MESSAGE || env.PACT_USER_RUN_SINGLE_PROVIDER_MESSAGE }}
         run: pytest -m "provider and pactflow and ${{ env.PACT_PROVIDER }}"
         if: ${{ env.PACT_PROVIDER != 'all' }}
         env:
