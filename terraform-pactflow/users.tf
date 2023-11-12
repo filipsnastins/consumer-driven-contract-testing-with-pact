@@ -3,4 +3,8 @@ resource "pact_user" "default" {
   active = true
   email  = "nastinsfilips@gmail.com"
   type   = "user"
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
