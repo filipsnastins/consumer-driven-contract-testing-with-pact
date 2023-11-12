@@ -74,6 +74,7 @@ async def test_consume_order_created_event(
                 "nanos": 990000000,
             }
         ),
+        "created_at": Like("2023-11-12T09:47:45.619843"),
     }
     pact.given("New order is created").expects_to_receive("OrderCreated event").with_content(expected_message)
 
