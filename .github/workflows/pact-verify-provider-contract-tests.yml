@@ -8,7 +8,7 @@ on:
     inputs:
       provider:
         type: choice
-        description: Provider nmae
+        description: Provider name
         required: true
         options:
           - customers
@@ -40,6 +40,7 @@ jobs:
 
       - name: Checkout specific commit (workflow dispatch)
         uses: actions/checkout@v4
+        if: ${{ github.event.client_payload.sha }}
         with:
           ref: ${{ github.event.client_payload.sha }}
 

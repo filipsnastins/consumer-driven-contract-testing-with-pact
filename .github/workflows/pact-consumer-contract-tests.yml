@@ -57,9 +57,6 @@ jobs:
 
       - name: Run Pact consumer contract tests
         run: pytest -m "consumer and pactflow"
-        env:
-          GIT_BRANCH: ${{ github.head_ref || github.ref_name }}
-          GIT_COMMIT: ${{ github.sha }}
 
       - name: Publish Pacts to PactFlow
         run: pact-broker publish --auto-detect-version-properties pacts
