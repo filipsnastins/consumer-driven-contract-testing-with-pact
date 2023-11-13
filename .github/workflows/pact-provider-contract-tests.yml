@@ -6,7 +6,7 @@ name: Pact - Provider Contract Tests
 on:
   repository_dispatch:
     types:
-      - '[PactFlow] Provider: contract requiring verification published'
+      - 'PactFlow: Provider contract requiring verification published'
   workflow_dispatch:
     inputs:
       provider:

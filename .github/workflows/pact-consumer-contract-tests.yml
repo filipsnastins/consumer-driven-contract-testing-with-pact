@@ -6,7 +6,7 @@ name: Pact - Consumer Contract Tests
 on:
   repository_dispatch:
     types:
-      - '[PactFlow] Consumer: contract requiring verification published'
+      - 'PactFlow: Consumer contract requiring verification published'
   workflow_dispatch:
     inputs:
       consumer:
@@ -88,3 +88,6 @@ jobs:
         env:
           GIT_BRANCH: ${{ github.event.client_payload.branch }}
           GIT_COMMIT: ${{ github.event.client_payload.sha }}
+
+      - name: Publish Pacts to PactFlow
+        run: pact-broker publish --auto-detect-version-properties pacts
