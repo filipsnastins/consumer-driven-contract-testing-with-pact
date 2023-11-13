@@ -3,7 +3,7 @@ resource "pact_webhook" "default" {
 
   events = ["contract_requiring_verification_published"]
 
-  description = "[PactFlow] Consumer - contract requiring verification published (POST api.github.com)"
+  description = "PactFlow: Consumer contract requiring verification published (POST api.github.com)"
 
   webhook_consumer = {
     name = var.webhook_consumer_name
@@ -20,7 +20,7 @@ resource "pact_webhook" "default" {
     }
     body = <<EOF
 {
-  "event_type": "[PactFlow] Consumer - contract requiring verification published",
+  "event_type": "PactFlow: Consumer contract requiring verification published",
   "client_payload": {
     "pytest_selector": "${var.pytest_selector}",
     "pact_url": "$${pactbroker.pactUrl}",
