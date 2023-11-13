@@ -74,6 +74,7 @@ async def test_consume_order_created_event(
                 "nanos": 990000000,
             }
         ),
+        "non_existing_field": Like("non_existing_value"),
     }
     pact.given("New order is created").expects_to_receive("OrderCreated event").with_content(expected_message)
 
