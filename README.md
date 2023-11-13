@@ -26,6 +26,8 @@ An example of applying Consumer-Driven Contract Testing (CDC) for testing micros
     - [Run Pact Contract Tests locally with self-hosted Pact Broker](#run-pact-contract-tests-locally-with-self-hosted-pact-broker)
     - [Run Pact Contract Tests with PactFlow.io](#run-pact-contract-tests-with-pactflowio)
   - [Running Pact in a Deployment Pipeline (CI/CD)](#running-pact-in-a-deployment-pipeline-cicd)
+    - [Setting up the Deployment Pipeline for the Example Application](#setting-up-the-deployment-pipeline-for-the-example-application)
+    - [Configuring Pact Broker/PactFlow with Terraform](#configuring-pact-brokerpactflow-with-terraform)
   - [References](#references)
   - [Development](#development)
     - [Example Application's Sample Requests](#example-applications-sample-requests)
@@ -216,10 +218,108 @@ PACT_PUBLISH_VERIFICATION_RESULTS=true pytest -m "provider and pactflow"
 
 ## Running Pact in a Deployment Pipeline (CI/CD)
 
-- [ ] From the simplest way of committing Pact contract file to the provider
-      repository to running Pact in CI pipeline with webhook integration.
-- [ ] Using Can-I-Deploy
-- [ ] Configuring Pact Broker/PactFlow with Terraform
+For a complete guide of integrating Pact into your CI/CI workflow, take a look at
+[Pact documentation - CI/CD setup guide](https://docs.pact.io/pact_nirvana).
+
+The guide covers more than just configuring Pact in the CI/CD pipeline,
+but first getting the team aligned on the process of contract testing,
+and getting started with the simplest and non-intrusive setup that will let
+you evaluate if Contract Testing and Pact are a good fit for your project.
+
+Since contract testing is a collaboration technique, it's important to get the team on board
+first, before introducing mandatory blocking steps to the deployment pipeline.
+
+> Contracts are not a replacement for good communication between or within teams.
+> In fact, contracts require collaboration and communication.
+
+A short summary of topics covered by the [Pact CI/CD setup guide](https://docs.pact.io/pact_nirvana):
+
+1. Lean about Pact, talk and get team alignment to try it out
+2. Get a single test working manually.
+3. Manually integrate with Pact Broker/PactFlow.
+4. Integrate Pact Broker/PactFlow to deployment pipeline.
+5. Use [Can-I-Deploy](https://docs.pact.io/pact_broker/can_i_deploy)
+   to verify if the version of your application you're about to deploy
+   is compatible with other application that are already deployed in that environment
+   (not covered in this example project).
+6. Record deployments and releases to the Pact Broker/PactFlow
+   (not covered in this example project).
+
+### Setting up the Deployment Pipeline for the Example Application
+
+The example application uses GitHub Actions for running the deployment pipeline.
+
+There're two workflows - one for running Pact consumer contract tests,
+and one for running Pact provider contract tests:
+
+- [pact-consumer-contract-tests.yml](.github/workflows/pact-consumer-contract-tests.yml)
+- [pact-provider-contract-tests.yml](.github/workflows/pact-provider-contract-tests.yml)
+
+The examples in this project don't go the full way of setting up the deployment pipeline
+using [Can-I-Deploy](https://docs.pact.io/pact_broker/can_i_deploy) and recording deployments and releases.
+The concrete implementation will differ depending on the existing CI/CD setup and adopted ways of working.
+
+**The important part is to establish quick feedback loops for the changes in the contract:**
+
+- Trigger the Provider Contract tests in the Provider CI/CD pipeline when a new Consumer contract version is published.
+- Get notified that changes in your Consumer contract are incompatible with the existing Provider contract,
+  i.e. the Provider contract tests failed in the Provider CI/CD pipeline.
+- Before deploying a new version of the Consumer, verify that it's compatible with currently deployed
+  version of the Provider. Using [Can-I-Deploy](https://docs.pact.io/pact_broker/can_i_deploy) is one way of doing it.
+
+Implemented workflow examples with PactFlow and GitHub Actions (see [.github/workflows/](.github/workflows/)):
+
+- New Consumer contract version is published - verify it against the Provider.
+
+```mermaid
+sequenceDiagram
+    participant Consumer as Consumer CI/CD (GitHub Actions)
+    participant PactBroker as Pact Broker/PactFlow
+    participant Provider as Provider CI/CD (GitHub Actions)
+
+    Consumer->>Consumer: On commit: run Pact consumer contract tests
+    Consumer->>PactBroker: Publish new contract version
+    PactBroker->>Provider: Webhook: contract requiring verification published
+    Provider->>+Provider: Run Pact provider contract tests against main branch
+    Provider->>PactBroker: Publish verification results
+    PactBroker->>PactBroker: Mark contract as verified
+```
+
+- Consumer contract hasn't changed since last commit - automatically mark it as verified
+  without running the Provider contract tests.
+
+```mermaid
+sequenceDiagram
+    participant Consumer as Consumer CI/CD (GitHub Actions)
+    participant PactBroker as Pact Broker/PactFlow
+    participant Provider as Provider CI/CD (GitHub Actions)
+
+    Consumer->>Consumer: On commit: run Pact consumer contract tests
+    Consumer->>PactBroker: Contract hasn't changed since last commit
+    PactBroker->>PactBroker: Mark contract as verified
+```
+
+- TODO Consumer contract changed - verification against the Provider failed.
+
+- TODO Provider contract changed - verify it against the Consumer.
+
+- TODO Provider contract changed - verification against the Consumer failed.
+
+### Configuring Pact Broker/PactFlow with Terraform
+
+Setting up Pacticipants and their webhook configurations in Pact Broker/PactFlow manually
+is tedious and error-prone, especially when you're growing the number of services and teams.
+
+You can use [Pact Broker Terraform Provider](https://docs.pact.io/pact_broker/terraform_provider)
+to automate the configuration of Pact Broker/PactFlow.
+
+The example project uses Terraform for automating the configuration of PactFlow:
+
+- Creation of user accounts and teams
+- Creation of Pacticipants
+- Configuration of Webhooks
+
+See [terraform-pactflow/](terraform-pactflow/) directory for the example Terraform configuration.
 
 ## References
 
@@ -260,7 +360,7 @@ curl -X POST --header "Content-Type: application/json" -d '{
 curl http://localhost:9702/order/8fccc85c-bbdd-47fb-b6c9-c5ed9a8d88df
 ```
 
-- Get order history for all customers.
+- Get order history for all customers (GraphQL query).
 
 ```bash
 curl -X POST -H "Content-Type: application/json" -d '{"query": "{getAllCustomers {id name orders {id orderTotal state}}}"}' http://localhost:9703/graphql
@@ -297,5 +397,5 @@ poetry run lint
 
 ```bash
 poetry run test
-poetry run test-ci
+poetry run test-ci  # With test coverage
 ```

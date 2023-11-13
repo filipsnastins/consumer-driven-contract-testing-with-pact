@@ -1,7 +1,7 @@
 resource "pact_user" "default" {
-  name   = "Filips Nastins"
+  name   = "John Doe"
   active = true
-  email  = "nastinsfilips@gmail.com"
+  email  = "john.doe@example.com"
   type   = "user"
 
   lifecycle {
