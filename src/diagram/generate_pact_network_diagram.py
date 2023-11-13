@@ -73,7 +73,7 @@ class Integration:
 
 def _split_pacticipant_name(name: str) -> str:
     split = name.split("--")
-    assert (
+    assert (  # nosec: B101
         len(split) == 2
     ), f"Pacticipant name '{name}' must end with the protocol denoted by --, e.g. 'service-orders--sns'"
     return split[0]
@@ -82,7 +82,7 @@ def _split_pacticipant_name(name: str) -> str:
 def _map_integration_protocol(consumer_name: str, provider_name: str) -> str:
     _, protocol_consumer = consumer_name.split("--")
     _, protocol_provider = provider_name.split("--")
-    assert (
+    assert (  # nosec: B101
         protocol_consumer == protocol_provider
     ), f"Consumer '{consumer_name}' and provider '{provider_name}' must have the same protocols"
     return PROTOCOL_LETTER_CASE_MAP.get(protocol_consumer) or protocol_consumer.upper()

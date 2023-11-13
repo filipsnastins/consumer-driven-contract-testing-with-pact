@@ -69,9 +69,9 @@ def get_pact_verifier_options() -> PactVerifierOptions:
             {"matchingBranch": True},
             {"deployedOrReleased": True},
         ],
-        publish_verification_results=True if os.getenv("PACT_PUBLISH_VERIFICATION_RESULTS") else False,
-        publish_version=os.getenv("GIT_COMMIT") or repo.head.object.hexsha,
-        provider_version_branch=os.getenv("GIT_BRANCH") or repo.active_branch.name,
+        publish_verification_results=bool(os.getenv("PACT_PUBLISH_VERIFICATION_RESULTS")),
+        publish_version=os.getenv("GIT_COMMIT", repo.head.object.hexsha),
+        provider_version_branch=os.getenv("GIT_BRANCH", repo.active_branch.name),
         enable_pending=True,
         verbose=True,
     )
