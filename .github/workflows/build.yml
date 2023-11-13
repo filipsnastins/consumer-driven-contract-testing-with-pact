@@ -57,11 +57,8 @@ jobs:
           poetry install --no-interaction --with dev --all-extras
           poetry show --tree
 
-      - name: Run Pact consumer contract tests
-        run: pytest -m "consumer and pactflow"
+      - name: Run Pact contract tests
+        run: pytest -m "(consumer or provider) and pactflow"
 
       - name: Publish Pacts to PactFlow
         run: pact-broker publish --auto-detect-version-properties pacts
-
-      - name: Run Pact provider contract tests
-        run: pytest -m "provider and pactflow"
