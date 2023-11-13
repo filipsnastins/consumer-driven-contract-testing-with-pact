@@ -14,6 +14,6 @@ variable "github_repository_name" {
   type = string
 }
 
-variable "pytest_provider_selector" {
+variable "pytest_selector" {
   type = string
 }

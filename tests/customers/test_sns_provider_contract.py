@@ -11,7 +11,7 @@ from customers.commands import CreateCustomerCommand, ReserveCustomerCreditComma
 from tests.fakes import InMemoryCustomerRepository, InMemoryMessagePublisher
 from tests.pact_helpers import get_pact_verifier_options, proto_to_dict
 
-pytestmark = [pytest.mark.customers(), pytest.mark.provider(), pytest.mark.pactflow(), pytest.mark.order(2)]
+pytestmark = [pytest.mark.customers__sns(), pytest.mark.provider(), pytest.mark.pactflow(), pytest.mark.order(2)]
 
 
 async def customer_created_message_provider(mocker: MockerFixture) -> dict:

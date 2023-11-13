@@ -2,7 +2,7 @@ variable "team_uuid" {
   type = string
 }
 
-variable "pacticipant_name" {
+variable "webhook_consumer_name" {
   type = string
 }
 

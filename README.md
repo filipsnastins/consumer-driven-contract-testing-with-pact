@@ -27,6 +27,8 @@ An example of applying Consumer-Driven Contract Testing (CDC) for testing micros
     - [Run Pact Contract Tests with PactFlow.io](#run-pact-contract-tests-with-pactflowio)
   - [Running Pact in a Deployment Pipeline (CI/CD)](#running-pact-in-a-deployment-pipeline-cicd)
     - [Setting up the Deployment Pipeline for the Example Application](#setting-up-the-deployment-pipeline-for-the-example-application)
+      - [Workflow - Consumer Contract Changed](#workflow---consumer-contract-changed)
+      - [Workflow - Provider Contract Changed](#workflow---provider-contract-changed)
     - [Configuring Pact Broker/PactFlow with Terraform](#configuring-pact-brokerpactflow-with-terraform)
   - [References](#references)
   - [Development](#development)
@@ -248,12 +250,14 @@ A short summary of topics covered by the [Pact CI/CD setup guide](https://docs.p
 ### Setting up the Deployment Pipeline for the Example Application
 
 The example application uses GitHub Actions for running the deployment pipeline.
+There're two deployment pipeline workflows:
 
-There're two workflows - one for running Pact consumer contract tests,
-and one for running Pact provider contract tests:
-
-- [pact-consumer-contract-tests.yml](.github/workflows/pact-consumer-contract-tests.yml)
-- [pact-provider-contract-tests.yml](.github/workflows/pact-provider-contract-tests.yml)
+- [build.yml](.github/workflows/build.yml) - a regular deployment pipeline workflow that runs on every commit.
+  It build the application and runs all tests for the given application, including Pact contract tests.
+- [pact-provider-contract-tests.yml](.github/workflows/pact-provider-contract-tests.yml) - a workflow
+  that's triggered by a webhook from Pact Broker/PactFlow when a new `Consumer` contract version is published.
+  The workflow runs the `Provider` contract tests against the new `Consumer` contract version, and publishes
+  the verification results back to the Pact Broker/PactFlow.
 
 The examples in this project don't go the full way of setting up the deployment pipeline
 using [Can-I-Deploy](https://docs.pact.io/pact_broker/can_i_deploy) and recording deployments and releases.
@@ -269,6 +273,8 @@ The concrete implementation will differ depending on the existing CI/CD setup an
 
 Implemented workflow examples with PactFlow and GitHub Actions (see [.github/workflows/](.github/workflows/)):
 
+#### Workflow - Consumer Contract Changed
+
 - New Consumer contract version is published - verify it against the Provider.
 
 ```mermaid
@@ -277,15 +283,28 @@ sequenceDiagram
     participant PactBroker as Pact Broker/PactFlow
     participant Provider as Provider CI/CD (GitHub Actions)
 
-    Consumer->>Consumer: On commit: run Pact consumer contract tests
-    Consumer->>PactBroker: Publish new contract version
-    PactBroker->>Provider: Webhook: contract requiring verification published
-    Provider->>+Provider: Run Pact provider contract tests against main branch
-    Provider->>PactBroker: Publish verification results
+    activate Consumer
+    Consumer->>Consumer: On commit: run Pact contract tests with 'pytest'
+    Consumer->>PactBroker: Pytest: publish new contract version
+    deactivate Consumer
+
+    activate PactBroker
+    PactBroker->>Provider: Webhook: 'Consumer' contract requiring verification published
+    deactivate PactBroker
+
+    activate Provider
+    Provider->>PactBroker: Pytest: fetch new Consumer contract version
+    Provider->>Provider: Pytest: 'run Pact Provider contract tests' against Provider's 'main' branch
+    Provider->>Provider: Pytest: provider contract tests passed
+    deactivate Provider
+
+    activate PactBroker
+    Provider->>PactBroker: Pytest: publish successful verification results
     PactBroker->>PactBroker: Mark contract as verified
+    deactivate PactBroker
 ```
 
-- Consumer contract hasn't changed since last commit - automatically mark it as verified
+- Consumer contract hasn't changed - automatically mark it as verified
   without running the Provider contract tests.
 
 ```mermaid
@@ -294,14 +313,71 @@ sequenceDiagram
     participant PactBroker as Pact Broker/PactFlow
     participant Provider as Provider CI/CD (GitHub Actions)
 
-    Consumer->>Consumer: On commit: run Pact consumer contract tests
-    Consumer->>PactBroker: Contract hasn't changed since last commit
+    activate Consumer
+    Consumer->>Consumer: On commit: run Pact contract tests
+    Consumer->>PactBroker: Pytest: publish new contract version
+    deactivate Consumer
+
+    activate PactBroker
+    PactBroker->>PactBroker: Contract hasn't changed
     PactBroker->>PactBroker: Mark contract as verified
+    deactivate PactBroker
 ```
 
-- TODO Consumer contract changed - verification against the Provider failed.
+- Consumer contract changed - verification against the Provider failed.
 
-- TODO Provider contract changed - verify it against the Consumer.
+```mermaid
+sequenceDiagram
+    participant Consumer as Consumer CI/CD (GitHub Actions)
+    participant PactBroker as Pact Broker/PactFlow
+    participant Provider as Provider CI/CD (GitHub Actions)
+
+    activate Consumer
+    Consumer->>Consumer: On commit: run Pact contract tests with 'pytest'
+    Consumer->>PactBroker: Pytest: publish new contract version
+    deactivate Consumer
+
+    activate PactBroker
+    PactBroker->>Provider: Webhook: 'Consumer' contract requiring verification published
+    deactivate PactBroker
+
+    activate Provider
+    Provider->>PactBroker: Pytest: fetch new Consumer contract version
+    Provider->>Provider: Pytest: 'run Pact Provider contract tests' against Provider's 'main' branch
+    Provider->>Provider: Pytest: provider contract tests failed
+    deactivate Provider
+
+    activate PactBroker
+    Provider->>PactBroker: Pytest: publish failed verification results
+    PactBroker->>PactBroker: Mark contract as verification failed
+    deactivate PactBroker
+```
+
+#### Workflow - Provider Contract Changed
+
+- Provider contract changed - verify it against the Consumer.
+
+```mermaid
+sequenceDiagram
+    participant Provider as Provider CI/CD (GitHub Actions)
+    participant PactBroker as Pact Broker/PactFlow
+    participant Consumer as Consumer CI/CD (GitHub Actions)
+
+    activate Provider
+    Provider->>Provider: On commit: run Pact contract tests with 'pytest'
+    Provider->>PactBroker: Pytest: publish new contract version
+    deactivate Provider
+
+    activate PactBroker
+    PactBroker->>Consumer: Webhook: 'Provider' contract requiring verification published
+    deactivate PactBroker
+
+    activate Consumer
+    Consumer->>PactBroker: Pytest: fetch new Provider contract version
+    Consumer->>Consumer: Pytest: 'run Pact Consumer contract tests' against Consumer's 'main' branch
+    Consumer->>Consumer: Pytest: consumer contract tests passed
+    deactivate Consumer
+```
 
 - TODO Provider contract changed - verification against the Consumer failed.
 

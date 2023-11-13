@@ -9,7 +9,7 @@ from yarl import URL
 
 from frontend.order_history import Customer, Order, OrderHistoryClient
 
-pytestmark = [pytest.mark.frontend(), pytest.mark.consumer(), pytest.mark.pactflow(), pytest.mark.order(1)]
+pytestmark = [pytest.mark.frontend__graphql(), pytest.mark.consumer(), pytest.mark.pactflow(), pytest.mark.order(1)]
 
 
 @pytest.fixture(scope="module")

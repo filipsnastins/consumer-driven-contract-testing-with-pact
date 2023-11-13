@@ -8,11 +8,11 @@ from tomodachi_testcontainers.utils import get_available_port
 
 from tests.pact_helpers import get_pact_verifier_options
 
-pytestmark = [pytest.mark.orders(), pytest.mark.provider(), pytest.mark.order(2)]
+pytestmark = [pytest.mark.customers__rest(), pytest.mark.provider(), pytest.mark.pactflow(), pytest.mark.order(2)]
 
 
 @pytest.fixture(scope="module")
-def service_orders_container(
+def service_customers_container(
     testcontainers_docker_image: DockerImage, moto_container: MotoContainer
 ) -> Generator[TomodachiContainer, None, None]:
     with (
@@ -21,27 +21,27 @@ def service_orders_container(
             edge_port=get_available_port(),
         )
         .with_env("ENVIRONMENT", "autotest")
-        .with_env("DYNAMODB_TABLE_NAME", "autotest-orders")
+        .with_env("DYNAMODB_TABLE_NAME", "autotest-customers")
         .with_env("AWS_REGION", "us-east-1")
         .with_env("AWS_ACCESS_KEY_ID", "testing")
         .with_env("AWS_SECRET_ACCESS_KEY", "testing")
         .with_env("AWS_ENDPOINT_URL", moto_container.get_internal_url())
-        .with_command("tomodachi run src/orders/tomodachi_app.py --production")
+        .with_command("tomodachi run src/customers/tomodachi_app.py --production")
     ) as container:
         yield cast(TomodachiContainer, container)
 
 
 @pytest.fixture(scope="module")
-def verifier(service_orders_container: TomodachiContainer) -> Verifier:
+def verifier(service_customers_container: TomodachiContainer) -> Verifier:
     return Verifier(
-        provider="service-orders--rest",
-        provider_base_url=service_orders_container.get_external_url(),
+        provider="service-customers--rest",
+        provider_base_url=service_customers_container.get_external_url(),
     )
 
 
-def test_verify_consumer_contracts(verifier: Verifier, service_orders_container: TomodachiContainer) -> None:
+def test_verify_consumer_contracts(verifier: Verifier, service_customers_container: TomodachiContainer) -> None:
     code, _ = verifier.verify_with_broker(
         **get_pact_verifier_options(),
-        provider_states_setup_url=f"{service_orders_container.get_external_url()}/_pact/provider_states",
+        provider_states_setup_url=f"{service_customers_container.get_external_url()}/_pact/provider_states",
     )
     assert code == 0

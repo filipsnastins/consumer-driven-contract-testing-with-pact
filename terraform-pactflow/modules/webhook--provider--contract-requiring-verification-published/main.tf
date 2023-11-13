@@ -3,7 +3,7 @@ resource "pact_webhook" "default" {
 
   events = ["contract_requiring_verification_published"]
 
-  description = "Contract requiring verification published (POST api.github.com)"
+  description = "[PactFlow] Provider: contract requiring verification published (POST api.github.com)"
 
   webhook_provider = {
     name = var.webhook_provider_name
@@ -20,13 +20,13 @@ resource "pact_webhook" "default" {
     }
     body = <<EOF
 {
-  "event_type": "PactFlow: contract requiring verification published",
+  "event_type": "[PactFlow] Provider: contract requiring verification published",
   "client_payload": {
-    "pytest_provider_selector": "${var.pytest_provider_selector}",
+    "pytest_selector": "${var.pytest_selector}",
     "pact_url": "$${pactbroker.pactUrl}",
     "sha": "$${pactbroker.providerVersionNumber}",
     "branch": "$${pactbroker.providerVersionBranch}",
-    "message": "Verify changed pact for '$${pactbroker.consumerName}' version '$${pactbroker.consumerVersionNumber}' branch '$${pactbroker.consumerVersionBranch}' by '$${pactbroker.providerVersionNumber}' ($${pactbroker.providerVersionDescriptions}) (workflow dispatch)"
+    "message": "Verify changed Pact for provider '$${pactbroker.providerName}' version '$${pactbroker.providerVersionNumber}' branch '$${pactbroker.providerVersionBranch}' by consumer '$${pactbroker.consumerName}' version '$${pactbroker.consumerVersionNumber}' branch '$${pactbroker.consumerVersionBranch}' ($${pactbroker.providerVersionDescriptions}) (workflow dispatch)"
   }
 }
 EOF

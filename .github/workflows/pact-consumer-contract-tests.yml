@@ -1,10 +1,28 @@
+# A workflow that's triggered by a webhook from Pact Broker/PactFlow when a new `Provider` contract version is published.
+# The workflow runs the `Consumer` contract tests against the new `Provider` contract version,
+# and publishes the verification results back to the Pact Broker/PactFlow.
 name: Pact - Consumer Contract Tests
 
 on:
-  push:
-    branches: [main]
-  pull_request:
+  repository_dispatch:
+    types:
+      - '[PactFlow] Consumer: contract requiring verification published'
   workflow_dispatch:
+    inputs:
+      consumer:
+        type: choice
+        description: Consumer name
+        default: all
+        options:
+          - all
+          - customers__rest
+          - customers__sns
+          - frontend__graphql
+          - frontend__rest
+          - order_history__graphql
+          - order_history__sns
+          - orders__rest
+          - orders__sns
 
 jobs:
   build:
@@ -13,16 +31,26 @@ jobs:
       DOCKER_BUILDKIT: 1
       PACT_BROKER_BASE_URL: ${{ secrets.PACT_BROKER_BASE_URL }}
       PACT_BROKER_TOKEN: ${{ secrets.PACT_BROKER_TOKEN }}
+      PACT_CONSUMER: ${{ inputs.consumer || github.event.client_payload.pytest_selector }}
       PACT_PUBLISH_VERIFICATION_RESULTS: true
       POETRY_VIRTUALENVS_CREATE: false
       PYTHONPATH: src:$PYTHONPATH
+
     strategy:
       max-parallel: 1
       matrix:
         python-version: ['3.11']
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout default branch (user run)
+        uses: actions/checkout@v3
+        if: ${{ inputs.consumer }}
+
+      - name: Checkout specific commit (workflow dispatch)
+        uses: actions/checkout@v4
+        if: ${{ github.event.client_payload.sha }}
+        with:
+          ref: ${{ github.event.client_payload.sha }}
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
@@ -37,11 +65,6 @@ jobs:
           key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
           restore-keys: ${{ runner.os }}-poetry-
 
-      - name: Install Pact Broker CLI
-        run: |
-          curl -fsSL https://raw.githubusercontent.com/pact-foundation/pact-ruby-standalone/master/install.sh | PACT_CLI_VERSION=v2.0.10 bash
-          echo "$HOME/pact/bin/pact-broker" >> $GITHUB_PATH
-
       - name: Install Poetry
         run: |
           curl -sSL https://install.python-poetry.org | POETRY_HOME="$HOME/.poetry" python - --yes
@@ -55,8 +78,13 @@ jobs:
           poetry install --no-interaction --with dev --all-extras
           poetry show --tree
 
-      - name: Run Pact consumer contract tests
+      - name: Run Pact Consumer contract tests for all Consumers (user run)
         run: pytest -m "consumer and pactflow"
+        if: ${{ env.PACT_CONSUMER == 'all' }}
 
-      - name: Publish Pacts to PactFlow
-        run: pact-broker publish --auto-detect-version-properties pacts
+      - name: ${{ github.event.client_payload.message || 'Run Pact Consumer contract test (user run)' }}
+        run: pytest -m "consumer and pactflow and ${{ env.PACT_CONSUMER }}"
+        if: ${{ env.PACT_CONSUMER != 'all' }}
+        env:
+          GIT_BRANCH: ${{ github.event.client_payload.branch }}
+          GIT_COMMIT: ${{ github.event.client_payload.sha }}

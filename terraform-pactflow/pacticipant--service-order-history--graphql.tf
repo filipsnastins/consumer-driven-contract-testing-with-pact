@@ -10,11 +10,11 @@ module "pact_pacticipant__service-order-history--graphql" {
 module "pact_pacticipant_webhooks__service-order-history--graphql" {
   source = "./modules/pacticipant-webhooks"
 
-  team_uuid                = pact_team.default.uuid
-  webhook_provider_name    = module.pact_pacticipant__service-order-history--graphql.name
-  github_organization      = module.pact_pacticipant__service-order-history--graphql.github_organization_name
-  github_repository_name   = module.pact_pacticipant__service-order-history--graphql.github_repository_name
-  pytest_provider_selector = "order_history"
+  team_uuid              = pact_team.default.uuid
+  pacticipant_name       = module.pact_pacticipant__service-order-history--graphql.name
+  github_organization    = module.pact_pacticipant__service-order-history--graphql.github_organization_name
+  github_repository_name = module.pact_pacticipant__service-order-history--graphql.github_repository_name
+  pytest_selector        = "order_history__graphql"
 
   depends_on = [module.pact_pacticipant__service-order-history--graphql]
 }

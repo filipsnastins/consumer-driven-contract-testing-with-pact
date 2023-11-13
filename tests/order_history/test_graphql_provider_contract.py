@@ -8,7 +8,12 @@ from tomodachi_testcontainers.utils import get_available_port
 from tests.containers import FastAPIContainer
 from tests.pact_helpers import get_pact_verifier_options
 
-pytestmark = [pytest.mark.order_history(), pytest.mark.provider(), pytest.mark.pactflow(), pytest.mark.order(2)]
+pytestmark = [
+    pytest.mark.order_history__graphql(),
+    pytest.mark.provider(),
+    pytest.mark.pactflow(),
+    pytest.mark.order(2),
+]
 
 
 @pytest.fixture(scope="module")

@@ -162,10 +162,14 @@ env = [
 ]
 markers = [
     # Application markers
-    "customers: service-customers tests",
-    "frontend: frontend tests",
-    "order_history: service-order-history tests",
-    "orders: service-orders tests",
+    "customers__rest: Pact service-customers tests - REST",
+    "customers__sns: Pact service-customers tests - SNS",
+    "frontend__graphql: Pact frontend tests - GraphQL",
+    "frontend__rest: Pact frontend tests - REST",
+    "order_history__graphql: Pact service-order-history tests - GraphQL",
+    "order_history__sns: Pact service-order-history tests - SNS",
+    "orders__rest: Pact service-orders tests - REST",
+    "orders__sns: Pact service-orders tests - SNS",
     # Pact markers
     "consumer: consumer contract test",
     "provider: provider contract test",

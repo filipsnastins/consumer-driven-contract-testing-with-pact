@@ -10,11 +10,11 @@ module "pact_pacticipant__frontend--graphql" {
 module "pact_pacticipant_webhooks__frontend--graphql" {
   source = "./modules/pacticipant-webhooks"
 
-  team_uuid                = pact_team.default.uuid
-  webhook_provider_name    = module.pact_pacticipant__frontend--graphql.name
-  github_organization      = module.pact_pacticipant__frontend--graphql.github_organization_name
-  github_repository_name   = module.pact_pacticipant__frontend--graphql.github_repository_name
-  pytest_provider_selector = "frontend"
+  team_uuid              = pact_team.default.uuid
+  pacticipant_name       = module.pact_pacticipant__frontend--graphql.name
+  github_organization    = module.pact_pacticipant__frontend--graphql.github_organization_name
+  github_repository_name = module.pact_pacticipant__frontend--graphql.github_repository_name
+  pytest_selector        = "frontend__graphql"
 
   depends_on = [module.pact_pacticipant__frontend--graphql]
 }

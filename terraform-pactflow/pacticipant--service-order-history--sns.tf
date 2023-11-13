@@ -10,11 +10,11 @@ module "pact_pacticipant__service-order-history--sns" {
 module "pact_pacticipant_webhooks__service-order-history--sns" {
   source = "./modules/pacticipant-webhooks"
 
-  team_uuid                = pact_team.default.uuid
-  webhook_provider_name    = module.pact_pacticipant__service-order-history--sns.name
-  github_organization      = module.pact_pacticipant__service-order-history--sns.github_organization_name
-  github_repository_name   = module.pact_pacticipant__service-order-history--sns.github_repository_name
-  pytest_provider_selector = "order_history"
+  team_uuid              = pact_team.default.uuid
+  pacticipant_name       = module.pact_pacticipant__service-order-history--sns.name
+  github_organization    = module.pact_pacticipant__service-order-history--sns.github_organization_name
+  github_repository_name = module.pact_pacticipant__service-order-history--sns.github_repository_name
+  pytest_selector        = "order_history__sns"
 
   depends_on = [module.pact_pacticipant__service-order-history--sns]
 }

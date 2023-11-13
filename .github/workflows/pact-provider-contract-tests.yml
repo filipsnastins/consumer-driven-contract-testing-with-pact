@@ -1,9 +1,12 @@
+# A workflow that's triggered by a webhook from Pact Broker/PactFlow when a new `Consumer` contract version is published.
+# The workflow runs the `Provider` contract tests against the new `Consumer` contract version,
+# and publishes the verification results back to the Pact Broker/PactFlow.
 name: Pact - Provider Contract Tests
 
 on:
   repository_dispatch:
     types:
-      - 'PactFlow: contract requiring verification published'
+      - '[PactFlow] Provider: contract requiring verification published'
   workflow_dispatch:
     inputs:
       provider:
@@ -12,10 +15,14 @@ on:
         default: all
         options:
           - all
-          - customers
-          - frontend
-          - order_history
-          - orders
+          - customers__rest
+          - customers__sns
+          - frontend__graphql
+          - frontend__rest
+          - order_history__graphql
+          - order_history__sns
+          - orders__rest
+          - orders__sns
 
 jobs:
   build:
@@ -24,7 +31,7 @@ jobs:
       DOCKER_BUILDKIT: 1
       PACT_BROKER_BASE_URL: ${{ secrets.PACT_BROKER_BASE_URL }}
       PACT_BROKER_TOKEN: ${{ secrets.PACT_BROKER_TOKEN }}
-      PACT_PROVIDER: ${{ inputs.provider || github.event.client_payload.pytest_provider_selector }}
+      PACT_PROVIDER: ${{ inputs.provider || github.event.client_payload.pytest_selector }}
       PACT_PUBLISH_VERIFICATION_RESULTS: true
       POETRY_VIRTUALENVS_CREATE: false
       PYTHONPATH: src:$PYTHONPATH
@@ -71,11 +78,11 @@ jobs:
           poetry install --no-interaction --with dev --all-extras
           poetry show --tree
 
-      - name: Run Pact provider contract tests for all providers (user run)
+      - name: Run Pact Provider contract tests for all Providers (user run)
         run: pytest -m "provider and pactflow"
         if: ${{ env.PACT_PROVIDER == 'all' }}
 
-      - name: ${{ github.event.client_payload.message || 'Run Pact provider contract test (user run)' }}
+      - name: ${{ github.event.client_payload.message || 'Run Pact Provider contract test (user run)' }}
         run: pytest -m "provider and pactflow and ${{ env.PACT_PROVIDER }}"
         if: ${{ env.PACT_PROVIDER != 'all' }}
         env:

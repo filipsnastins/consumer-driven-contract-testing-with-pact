@@ -9,7 +9,7 @@ from yarl import URL
 
 from frontend.orders import Order, OrderClient, OrderNotFoundError, OrderState
 
-pytestmark = [pytest.mark.frontend(), pytest.mark.consumer(), pytest.mark.order(1)]
+pytestmark = [pytest.mark.frontend__rest(), pytest.mark.consumer(), pytest.mark.order(1)]
 
 
 @pytest.fixture(scope="module")

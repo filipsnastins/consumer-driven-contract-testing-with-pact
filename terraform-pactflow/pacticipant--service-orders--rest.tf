@@ -10,11 +10,11 @@ module "pact_pacticipant__service-orders--rest" {
 module "pact_pacticipant_webhooks__service-orders--rest" {
   source = "./modules/pacticipant-webhooks"
 
-  team_uuid                = pact_team.default.uuid
-  webhook_provider_name    = module.pact_pacticipant__service-orders--rest.name
-  github_organization      = module.pact_pacticipant__service-orders--rest.github_organization_name
-  github_repository_name   = module.pact_pacticipant__service-orders--rest.github_repository_name
-  pytest_provider_selector = "orders"
+  team_uuid              = pact_team.default.uuid
+  pacticipant_name       = module.pact_pacticipant__service-orders--rest.name
+  github_organization    = module.pact_pacticipant__service-orders--rest.github_organization_name
+  github_repository_name = module.pact_pacticipant__service-orders--rest.github_repository_name
+  pytest_selector        = "orders__rest"
 
   depends_on = [module.pact_pacticipant__service-orders--rest]
 }
