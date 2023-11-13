@@ -253,7 +253,7 @@ The example application uses GitHub Actions for running the deployment pipeline.
 There're two deployment pipeline workflows:
 
 - [build.yml](.github/workflows/build.yml) - a regular deployment pipeline workflow that runs on every commit.
-  It build the application and runs all tests for the given application, including Pact contract tests.
+  It builds and tests the application, including running Pact contract tests.
 - [pact-provider-contract-tests.yml](.github/workflows/pact-provider-contract-tests.yml) - a workflow
   that's triggered by a webhook from Pact Broker/PactFlow when a new `Consumer` contract version is published.
   The workflow runs the `Provider` contract tests against the new `Consumer` contract version, and publishes

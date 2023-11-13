@@ -1,5 +1,5 @@
 # A regular deployment pipeline workflow that runs on every commit.
-# It build the application and runs all tests for the given application, including Pact contract tests.
+# It builds and tests the application, including running Pact contract tests.
 name: Build
 
 on:

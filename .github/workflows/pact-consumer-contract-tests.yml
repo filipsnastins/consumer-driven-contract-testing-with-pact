@@ -1,4 +1,5 @@
 # A workflow that's triggered by a webhook from Pact Broker/PactFlow when a new `Provider` contract version is published.
+
 # The workflow runs the `Consumer` contract tests against the new `Provider` contract version,
 # and publishes the verification results back to the Pact Broker/PactFlow.
 name: Pact - Consumer Contract Tests
@@ -6,7 +7,7 @@ name: Pact - Consumer Contract Tests
 on:
   repository_dispatch:
     types:
-      - 'PactFlow: Consumer contract requiring verification published'
+      - '[PactFlow] Consumer - contract requiring verification published'
   workflow_dispatch:
     inputs:
       consumer:
@@ -43,7 +44,7 @@ jobs:
 
     steps:
       - name: Checkout default branch (user run)
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         if: ${{ inputs.consumer }}
 
       - name: Checkout specific commit (workflow dispatch)
