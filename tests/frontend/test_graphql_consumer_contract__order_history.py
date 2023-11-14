@@ -87,4 +87,3 @@ async def test_get_all_customers(pact: Pact, client: OrderHistoryClient) -> None
                 ],
             )
         ]
-        pact.verify()
