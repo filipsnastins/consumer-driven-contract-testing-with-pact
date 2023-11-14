@@ -27,8 +27,8 @@ An example of applying Consumer-Driven Contract Testing (CDC) for testing micros
     - [Run Pact Contract Tests with PactFlow.io](#run-pact-contract-tests-with-pactflowio)
   - [Running Pact in a Deployment Pipeline (CI/CD)](#running-pact-in-a-deployment-pipeline-cicd)
     - [Setting up the Deployment Pipeline for the Example Application](#setting-up-the-deployment-pipeline-for-the-example-application)
-      - [Workflow - Consumer Contract Changed](#workflow---consumer-contract-changed)
-      - [Workflow - Provider Contract Changed](#workflow---provider-contract-changed)
+      - [Consumer Deployment Pipeline](#consumer-deployment-pipeline)
+      - [Provider Deployment Pipeline](#provider-deployment-pipeline)
     - [Configuring Pact Broker/PactFlow with Terraform](#configuring-pact-brokerpactflow-with-terraform)
   - [References](#references)
   - [Development](#development)
@@ -254,7 +254,7 @@ There're two deployment pipeline workflows:
 
 - [build.yml](.github/workflows/build.yml) - a regular deployment pipeline workflow that runs on every commit.
   It builds and tests the application, including running Pact contract tests.
-- [pact-provider-contract-tests.yml](.github/workflows/pact-provider-contract-tests.yml) - a workflow
+- [pact-verify-provider-contract.yml](.github/workflows/pact-verify-provider-contract.yml) - a workflow
   that's triggered by a webhook from Pact Broker/PactFlow when a new `Consumer` contract version is published.
   The workflow runs the `Provider` contract tests against the new `Consumer` contract version, and publishes
   the verification results back to the Pact Broker/PactFlow.
@@ -273,9 +273,15 @@ The concrete implementation will differ depending on the existing CI/CD setup an
 
 Implemented workflow examples with PactFlow and GitHub Actions (see [.github/workflows/](.github/workflows/)):
 
-#### Workflow - Consumer Contract Changed
+For more examples, see:
 
-- New Consumer contract version is published - verify it against the Provider.
+- <https://github.com/pactflow/example-consumer>
+- <https://github.com/pactflow/example-provider>
+
+#### Consumer Deployment Pipeline
+
+- New Consumer contract version is published - verify it against the Provider
+  ([.github/workflows/pact-verify-provider-contract.yml](.github/workflows/pact-verify-provider-contract.yml)).
 
 ```mermaid
 sequenceDiagram
@@ -304,27 +310,8 @@ sequenceDiagram
     deactivate PactBroker
 ```
 
-- Consumer contract hasn't changed - automatically mark it as verified
-  without running the Provider contract tests.
-
-```mermaid
-sequenceDiagram
-    participant Consumer as Consumer CI/CD (GitHub Actions)
-    participant PactBroker as Pact Broker/PactFlow
-    participant Provider as Provider CI/CD (GitHub Actions)
-
-    activate Consumer
-    Consumer->>Consumer: On commit: run Pact contract tests
-    Consumer->>PactBroker: Pytest: publish new contract version
-    deactivate Consumer
-
-    activate PactBroker
-    PactBroker->>PactBroker: Contract hasn't changed
-    PactBroker->>PactBroker: Mark contract as verified
-    deactivate PactBroker
-```
-
 - Consumer contract changed - verification against the Provider failed.
+  ([.github/workflows/pact-verify-provider-contract.yml](.github/workflows/pact-verify-provider-contract.yml)).
 
 ```mermaid
 sequenceDiagram
@@ -353,15 +340,65 @@ sequenceDiagram
     deactivate PactBroker
 ```
 
-#### Workflow - Provider Contract Changed
+- Consumer contract hasn't changed - automatically mark it as verified
+  without running the Provider contract tests.
 
-- Provider contract changed - verify it against the Consumer (or Pact Broker?).
+```mermaid
+sequenceDiagram
+    participant Consumer as Consumer CI/CD (GitHub Actions)
+    participant PactBroker as Pact Broker/PactFlow
+    participant Provider as Provider CI/CD (GitHub Actions)
 
-...
+    activate Consumer
+    Consumer->>Consumer: On commit: run Pact contract tests
+    Consumer->>PactBroker: Pytest: publish new contract version
+    deactivate Consumer
 
-- Provider contract changed - verification against the Consumer failed.
+    activate PactBroker
+    PactBroker->>PactBroker: Contract hasn't changed
+    PactBroker->>PactBroker: Mark contract as verified
+    deactivate PactBroker
+```
 
-...
+#### Provider Deployment Pipeline
+
+- On Provider code change - verify Provider contract against Consumer contracts from Pact Broker/PactFlow
+  ([.github/workflows/build.yml](.github/workflows/build.yml)).
+
+```mermaid
+sequenceDiagram
+    participant Provider as Provider CI/CD (GitHub Actions)
+    participant PactBroker as Pact Broker/PactFlow
+    participant Consumer as Consumer CI/CD (GitHub Actions)
+
+    activate Provider
+    Provider->>Provider: On commit: run Pact contract tests with 'pytest'
+    Provider->>PactBroker: Pytest: fetch Consumer contracts from 'main' branch or latest deployed version
+    Provider->>Provider: Pytest: 'run Pact Provider contract tests' against Provider's current branch
+    Provider->>Provider: Pytest: provider contract tests passed
+    Provider->>PactBroker: Pytest: publish successful verification results
+    Provider->>Provider: GitHub Actions: mark build as successful
+    deactivate Provider
+```
+
+- On Provider code change - Provider contract verification failed
+  ([.github/workflows/build.yml](.github/workflows/build.yml)).
+
+```mermaid
+sequenceDiagram
+    participant Provider as Provider CI/CD (GitHub Actions)
+    participant PactBroker as Pact Broker/PactFlow
+    participant Consumer as Consumer CI/CD (GitHub Actions)
+
+    activate Provider
+    Provider->>Provider: On commit: run Pact contract tests with 'pytest'
+    Provider->>PactBroker: Pytest: fetch Consumer contracts from 'main' branch or latest deployed version
+    Provider->>Provider: Pytest: 'run Pact Provider contract tests' against Provider's current branch
+    Provider->>Provider: Pytest: provider contract tests failed
+    Provider->>PactBroker: Pytest: publish failed verification results
+    Provider->>Provider: GitHub Actions: mark build as failed
+    deactivate Provider
+```
 
 ### Configuring Pact Broker/PactFlow with Terraform
 
@@ -382,8 +419,12 @@ See [terraform-pactflow/](terraform-pactflow/) directory for the example Terrafo
 ## References
 
 - <https://docs.pact.io>
-- <https://pactflow.io/blog/the-case-for-contract-testing-protobufs-grpc-avro> - the need for contract testing
-  even when using Protobuf.
+- <https://pactflow.io/blog/the-case-for-contract-testing-protobufs-grpc-avro> -
+  the need for contract testing even when using Protobuf and similar protocols.
+- Pact CI/CD configuration examples:
+  - <https://docs.pact.io/pact_nirvana>
+  - <https://github.com/pactflow/example-consumer>
+  - <https://github.com/pactflow/example-provider>
 
 ## Development
 
