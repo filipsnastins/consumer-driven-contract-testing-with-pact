@@ -73,7 +73,6 @@ async def test_create_order(pact: Pact, client: OrderClient) -> None:
             order_total=Decimal("100.99"),
             state=OrderState.CREATED,
         )
-        pact.verify()
 
 
 @pytest.mark.asyncio()
@@ -89,12 +88,9 @@ async def test_get_non_existing_order(pact: Pact, client: OrderClient) -> None:
         .will_respond_with(status=404, body=expected)
     )
 
-    with pact:
+    with pact, pytest.raises(OrderNotFoundError):
         # Act & assert
-        with pytest.raises(OrderNotFoundError):
-            await client.get(uuid.UUID("02f0a114-273d-4e40-af9e-129f8e3c193d"))
-
-        pact.verify()
+        await client.get(uuid.UUID("02f0a114-273d-4e40-af9e-129f8e3c193d"))
 
 
 @pytest.mark.asyncio()
@@ -128,4 +124,3 @@ async def test_get_order(pact: Pact, client: OrderClient) -> None:
             order_total=Decimal("100.99"),
             state=OrderState.CREATED,
         )
-        pact.verify()

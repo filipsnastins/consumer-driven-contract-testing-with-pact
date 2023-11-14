@@ -355,31 +355,13 @@ sequenceDiagram
 
 #### Workflow - Provider Contract Changed
 
-- Provider contract changed - verify it against the Consumer.
+- Provider contract changed - verify it against the Consumer (or Pact Broker?).
 
-```mermaid
-sequenceDiagram
-    participant Provider as Provider CI/CD (GitHub Actions)
-    participant PactBroker as Pact Broker/PactFlow
-    participant Consumer as Consumer CI/CD (GitHub Actions)
+...
 
-    activate Provider
-    Provider->>Provider: On commit: run Pact contract tests with 'pytest'
-    Provider->>PactBroker: Pytest: publish new contract version
-    deactivate Provider
+- Provider contract changed - verification against the Consumer failed.
 
-    activate PactBroker
-    PactBroker->>Consumer: Webhook: 'Provider' contract requiring verification published
-    deactivate PactBroker
-
-    activate Consumer
-    Consumer->>PactBroker: Pytest: fetch new Provider contract version
-    Consumer->>Consumer: Pytest: 'run Pact Consumer contract tests' against Consumer's 'main' branch
-    Consumer->>Consumer: Pytest: consumer contract tests passed
-    deactivate Consumer
-```
-
-- TODO Provider contract changed - verification against the Consumer failed.
+...
 
 ### Configuring Pact Broker/PactFlow with Terraform
 

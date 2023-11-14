@@ -170,17 +170,15 @@ env = [
     "DATABASE_URL=sqlite+aiosqlite:///:memory:",
 ]
 markers = [
-    # Application markers
-    "customers__rest: Pact service-customers tests - REST",
-    "customers__sns: Pact service-customers tests - SNS",
-    "frontend__graphql: Pact frontend tests - GraphQL",
-    "frontend__rest: Pact frontend tests - REST",
-    "order_history__graphql: Pact service-order-history tests - GraphQL",
-    "order_history__sns: Pact service-order-history tests - SNS",
-    "orders__rest: Pact service-orders tests - REST",
-    "orders__sns: Pact service-orders tests - SNS",
-    # Pact markers
-    "consumer: consumer contract test",
-    "provider: provider contract test",
+    "customers__rest",
+    "customers__sns",
+    "frontend__graphql",
+    "frontend__rest",
+    "order_history__graphql",
+    "order_history__sns",
+    "orders__rest",
+    "orders__sns",
+    "consumer: Pact Consumer contract test",
+    "provider: Pact Provider contract test",
     "pactflow: subset of tests running with PatcFlow; due to 5 integration limit in PactFlow free plan",
 ]
