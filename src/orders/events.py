@@ -36,7 +36,7 @@ class OrderCreatedEvent:
             correlation_id=str(self.correlation_id),
             order_id=str(self.order_id),
             customer_id=str(self.customer_id),
-            order_total=proto.Money(units=order_total.units, nanos=order_total.nanos),
+            # order_total=proto.Money(units=order_total.units, nanos=order_total.nanos),
             created_at=self.created_at.isoformat(),
         )
 
