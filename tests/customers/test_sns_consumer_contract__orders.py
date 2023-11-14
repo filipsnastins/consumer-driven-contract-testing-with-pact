@@ -64,7 +64,6 @@ async def test_consume_order_created_event(
         repository,
         publisher,
     )
-    
     expected_message = {
         "correlation_id": Term(Format.Regexes.uuid.value, "23b2c005-a914-41ab-92d7-d8d4d8e98020"),
         "customer_id": Term(Format.Regexes.uuid.value, str(customer.id)),

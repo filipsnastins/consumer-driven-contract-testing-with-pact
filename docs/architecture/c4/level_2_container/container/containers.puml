@@ -10,27 +10,27 @@ AddBoundaryTag("microservice", $borderStyle = SolidLine(), $shape = EightSidedSh
 !procedure serviceOrdersContainer()
     Container_Boundary(serviceOrdersBoundary, "", $tags="microservice") {
         Container(serviceOrders, "Order Service", "Python, Tomodachi", "Manages order lifecycle. \nProvides operations on orders, e.g. order creation, cancellation, approval etc.")
-        
+
         ContainerDb(serviceOrdersDatabase, "Orders Database", "DynamoDB", "Stores ordes.")
-        
+
         Rel_Neighbor(serviceOrders, serviceOrdersDatabase, "Reads and writes order information", "aiobotocore")
     }
 !endprocedure
 
 !procedure serviceCustomersContainer()
-    Container_Boundary(serviceCustomersBoundary, "", $tags="microservice") {        
+    Container_Boundary(serviceCustomersBoundary, "", $tags="microservice") {
         Container(serviceCustomers, "Customer Service", "Python, Tomodachi", "Manages customers. \nProvides operations on customers, e.g. customer creation. \nManages customer credit limit and credit checks.")
-        
+
         ContainerDb(serviceCustomersDatabase, "Customers Database", "DynamoDB", "Stores customers.")
-        
+
         Rel_Neighbor(serviceCustomers, serviceCustomersDatabase, "Reads and writes customer information", "aiobotocore")
     }
 !endprocedure
 
 !procedure serviceOrderHistoryContainer()
-    Container_Boundary(serviceOrderHistoryBoundary, "", $tags="microservice") {        
+    Container_Boundary(serviceOrderHistoryBoundary, "", $tags="microservice") {
         Container(serviceOrderHistory, "Order History Service", "Python, Tomodachi", "Maintains an aggregated view of the customer's order history.")
-        
+
         ContainerDb(serviceOrderHistoryDatabase, "Order History Database", "PostgreSQL", "Order history CQRS view.")
 
         Rel_Neighbor(serviceOrderHistory, serviceOrderHistoryDatabase, "Aggregates order and customer information", "SQLAlchemy")

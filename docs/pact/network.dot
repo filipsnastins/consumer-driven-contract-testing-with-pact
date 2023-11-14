@@ -15,7 +15,7 @@ digraph {
   "service-customers" [label="Service Customers"];
   "service-order-history" [label="Service Order History"];
   "service-orders" [label="Service Orders"];
-  
+
 
   "frontend" -> "service-customers" [label="REST"];
   "frontend" -> "service-order-history" [label="GraphQL"];
@@ -24,7 +24,7 @@ digraph {
   "service-order-history" -> "service-customers" [label="SNS"];
   "service-order-history" -> "service-orders" [label="SNS"];
   "service-orders" -> "service-customers" [label="SNS"];
-  
+
 
   legend [shape=none, margin=0, fontsize=8, fillcolor="#ffffff" label=<
     <table border="0" cellborder="1" cellspacing="0">

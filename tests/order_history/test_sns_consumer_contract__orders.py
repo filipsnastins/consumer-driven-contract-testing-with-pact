@@ -51,7 +51,6 @@ async def test_order_created(
         ),
         repository,
     )
-    
     expected_message = {
         "customer_id": Term(Format.Regexes.uuid.value, "1e5df855-a757-4aa5-a55f-2ddf6930b250"),
         "order_id": Term(Format.Regexes.uuid.value, "f408cf27-8c53-486e-89f6-f0b45355b3ed"),
