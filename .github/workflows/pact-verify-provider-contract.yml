@@ -2,7 +2,7 @@
 
 # The workflow runs the `Provider` contract tests against the new `Consumer` contract version,
 # and publishes the verification results back to the Pact Broker/PactFlow.
-name: Pact - Provider Contract Tests
+name: Pact - Verify Provider Contract
 
 on:
   repository_dispatch:

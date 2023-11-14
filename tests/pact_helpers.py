@@ -107,7 +107,7 @@ def get_verify_with_pact_url_options() -> PactVerifierOptions:
         publish_verification_results=bool(os.getenv("PACT_PUBLISH_VERIFICATION_RESULTS")),
         publish_version=os.getenv("GIT_COMMIT") or repo.head.object.hexsha,
         provider_version_branch=os.getenv("GIT_BRANCH") or repo.active_branch.name,
-        enable_pending=True,
+        enable_pending=False,
         include_wip_pacts_since=None,
         verbose=bool(os.getenv("PACT_VERBOSE")),
     )
