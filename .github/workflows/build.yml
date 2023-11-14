@@ -59,6 +59,9 @@ jobs:
           poetry install --no-interaction --with dev --all-extras
           poetry show --tree
 
+      - name: Run commit hooks
+        run: SKIP=test poetry run hooks
+
       - name: Run Pact contract tests
         run: pytest -m "(consumer or provider) and pactflow"
 
