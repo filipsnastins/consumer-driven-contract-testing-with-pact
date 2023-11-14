@@ -27,9 +27,10 @@ An example of applying Consumer-Driven Contract Testing (CDC) for testing micros
     - [Run Pact Contract Tests with PactFlow.io](#run-pact-contract-tests-with-pactflowio)
   - [Running Pact in a Deployment Pipeline (CI/CD)](#running-pact-in-a-deployment-pipeline-cicd)
     - [Setting up the Deployment Pipeline for the Example Application](#setting-up-the-deployment-pipeline-for-the-example-application)
-      - [Consumer Deployment Pipeline](#consumer-deployment-pipeline)
-      - [Provider Deployment Pipeline](#provider-deployment-pipeline)
+      - [When the Consumer Changes](#when-the-consumer-changes)
+      - [When the Provider Changes](#when-the-provider-changes)
     - [Configuring Pact Broker/PactFlow with Terraform](#configuring-pact-brokerpactflow-with-terraform)
+  - [Limitations and Corner Cases](#limitations-and-corner-cases)
   - [References](#references)
   - [Development](#development)
     - [Example Application's Sample Requests](#example-applications-sample-requests)
@@ -75,7 +76,7 @@ For example, `service-customers--rest` is a `service-customers` application comm
 and `service-customers--sns` is a `service-customers` application communicating over SNS (asynchronous messaging).
 
 The need to name Pacticipants depending on the communication protocol is because Pact uses
-different mechanisms for verifying contracts depending wether it's a synchronous HTTP-based protocol or asynchronous messaging.
+different mechanisms for verifying contracts depending whether it's a synchronous HTTP-based protocol or asynchronous messaging.
 Pact `HTTP` contract tests use `pact.Verifier`, and Pact `Messaging` contract tests use `pact.MessageProvider`,
 and they can't be mixed.
 
@@ -223,7 +224,7 @@ PACT_PUBLISH_VERIFICATION_RESULTS=true pytest -m "provider and pactflow"
 For a complete guide of integrating Pact into your CI/CI workflow, take a look at
 [Pact documentation - CI/CD setup guide](https://docs.pact.io/pact_nirvana).
 
-The guide covers more than just configuring Pact in the CI/CD pipeline,
+The Pact guide covers more than just configuring Pact in the CI/CD pipeline,
 but first getting the team aligned on the process of contract testing,
 and getting started with the simplest and non-intrusive setup that will let
 you evaluate if Contract Testing and Pact are a good fit for your project.
@@ -249,19 +250,12 @@ A short summary of topics covered by the [Pact CI/CD setup guide](https://docs.p
 
 ### Setting up the Deployment Pipeline for the Example Application
 
-The example application uses GitHub Actions for running the deployment pipeline.
-There're two deployment pipeline workflows:
+From [github.com/pactflow/example-provider](https://github.com/pactflow/example-provider):
 
-- [build.yml](.github/workflows/build.yml) - a regular deployment pipeline workflow that runs on every commit.
-  It builds and tests the application, including running Pact contract tests.
-- [pact-verify-provider-contract.yml](.github/workflows/pact-verify-provider-contract.yml) - a workflow
-  that's triggered by a webhook from Pact Broker/PactFlow when a new `Consumer` contract version is published.
-  The workflow runs the `Provider` contract tests against the new `Consumer` contract version, and publishes
-  the verification results back to the Pact Broker/PactFlow.
-
-The examples in this project don't go the full way of setting up the deployment pipeline
-using [Can-I-Deploy](https://docs.pact.io/pact_broker/can_i_deploy) and recording deployments and releases.
-The concrete implementation will differ depending on the existing CI/CD setup and adopted ways of working.
+> **When using Pact in a CI/CD pipeline, there are two reasons for a Pact verification task to take place:**
+>
+> - When the Consumer changes - to see if the Provider is compatible with the new expectations
+> - When the Provider changes - to make sure it does not break any existing Consumer expectations
 
 **The important part is to establish quick feedback loops for the changes in the contract:**
 
@@ -271,16 +265,29 @@ The concrete implementation will differ depending on the existing CI/CD setup an
 - Before deploying a new version of the Consumer, verify that it's compatible with currently deployed
   version of the Provider. Using [Can-I-Deploy](https://docs.pact.io/pact_broker/can_i_deploy) is one way of doing it.
 
-Implemented workflow examples with PactFlow and GitHub Actions (see [.github/workflows/](.github/workflows/)):
+The example application uses GitHub Actions for running the deployment pipeline.
+Implemented workflow examples with PactFlow and GitHub Actions are in [.github/workflows/](.github/workflows/).
+There're two deployment pipeline workflows:
+
+- [build.yml](.github/workflows/build.yml) - a regular deployment pipeline workflow that runs on every commit.
+  It builds and tests the application, including running Pact contract tests.
+- [pact-verify-provider-contract.yml](.github/workflows/pact-verify-provider-contract.yml) - a workflow
+  that's triggered by a webhook from Pact Broker/PactFlow when a new Consumer contract version is published.
+  The workflow runs the Provider contract tests against the new Consumer contract version, and publishes
+  the verification results back to the Pact Broker/PactFlow.
+
+The examples in this project don't go the full way of setting up the deployment pipeline
+using [Can-I-Deploy](https://docs.pact.io/pact_broker/can_i_deploy) and recording deployments and releases.
+The concrete implementation will differ depending on the existing CI/CD setup and adopted ways of working.
 
 For more examples, see:
 
 - <https://github.com/pactflow/example-consumer>
 - <https://github.com/pactflow/example-provider>
 
-#### Consumer Deployment Pipeline
+#### When the Consumer Changes
 
-- New Consumer contract version is published - verify it against the Provider
+- On new Consumer contract version - verify it against the Provider
   ([.github/workflows/pact-verify-provider-contract.yml](.github/workflows/pact-verify-provider-contract.yml)).
 
 ```mermaid
@@ -310,7 +317,7 @@ sequenceDiagram
     deactivate PactBroker
 ```
 
-- Consumer contract changed - verification against the Provider failed.
+- On new Consumer contract version - verification against the Provider failed.
   ([.github/workflows/pact-verify-provider-contract.yml](.github/workflows/pact-verify-provider-contract.yml)).
 
 ```mermaid
@@ -336,12 +343,12 @@ sequenceDiagram
 
     activate PactBroker
     Provider->>PactBroker: Pytest: publish failed verification results
-    PactBroker->>PactBroker: Mark contract as verification failed
+    PactBroker->>PactBroker: Mark contract verification as failed
     deactivate PactBroker
 ```
 
-- Consumer contract hasn't changed - automatically mark it as verified
-  without running the Provider contract tests.
+- On new commit in Consumer repository, but Consumer contract hasn't changed -
+  automatically mark it as verified in Pact Broker/PactFlow without running the Provider contract tests.
 
 ```mermaid
 sequenceDiagram
@@ -360,9 +367,9 @@ sequenceDiagram
     deactivate PactBroker
 ```
 
-#### Provider Deployment Pipeline
+#### When the Provider Changes
 
-- On Provider code change - verify Provider contract against Consumer contracts from Pact Broker/PactFlow
+- On new commit in Provider repository - verify Provider contract against Consumer contracts from Pact Broker/PactFlow
   ([.github/workflows/build.yml](.github/workflows/build.yml)).
 
 ```mermaid
@@ -381,7 +388,7 @@ sequenceDiagram
     deactivate Provider
 ```
 
-- On Provider code change - Provider contract verification failed
+- On new commit in Provider repository - Provider contract verification failed
   ([.github/workflows/build.yml](.github/workflows/build.yml)).
 
 ```mermaid
@@ -415,6 +422,21 @@ The example project uses Terraform for automating the configuration of PactFlow:
 - Configuration of Webhooks
 
 See [terraform-pactflow/](terraform-pactflow/) directory for the example Terraform configuration.
+
+## Limitations and Corner Cases
+
+- Pacticipant name must include a communication protocol, .e.g `--rest` or `--sns`.
+  Due to Pact handling synchronous HTTP and asynchronous messaging contract tests differently,
+  they can't be mixed in the same Pacticipant.
+- Due to the above, a single service can have multiple Pacticipants, one for each communication protocol
+  the service supports. To run tests against the specific protocol, e.g. in the case
+  when a Consumer contract has changed and you need to verify it against the specific Provider's protocol,
+  you would need to use `pytest` markers and test selectors (`pytest -m "orders__sns"`).
+  This is implemented in this example project.
+- GraphQL Contract Testing - queries and mutations must be formatted in the same way as in the contract,
+  including spaces and new lines, otherwise Pact Mock Server would not be able to match the request body.
+  The easiest way would be to always "minify" (remove all whitespace and newlines) the GraphQL queries and mutations
+  before sending the requests.
 
 ## References
 
