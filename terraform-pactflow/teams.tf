@@ -15,8 +15,4 @@ resource "pact_team" "default" {
     module.pact_pacticipant__service-orders--rest.name,
     module.pact_pacticipant__service-orders--sns.name,
   ]
-
-  lifecycle {
-    prevent_destroy = true
-  }
 }

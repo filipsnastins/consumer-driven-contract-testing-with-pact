@@ -8,6 +8,5 @@
   - [x] Running in CI
   - [x] Configuring the Pact Broker and PactFlow with Terraform
   - [ ] References
-
-- [ ] Terraform
-  - [ ] When done, remove my name, email and default PactFlow URL
+  - [ ] Terraform
+  - [ ] Testing Protobuf

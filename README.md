@@ -41,6 +41,7 @@ An example of applying Consumer-Driven Contract Testing (CDC) for testing micros
 
 - [ ] Contract testing vs integrated end-to-end testing
 - [ ] Contract testing vs functional testing
+- [ ] Types of contract testing: consumer-driven, bi-directional, provider-driven etc.
 
 ## Consumer-Driven Contract Testing
 
@@ -55,6 +56,8 @@ An example of applying Consumer-Driven Contract Testing (CDC) for testing micros
 - [ ] When to not use Pact
 - [ ] Best practices when writing contracts
 - [ ] Testing syntax vs semantics
+- [ ] Testing Protobufs
+- [ ] Link to python-pact library and examples
 
 ## Example Application Architecture (C4)
 
@@ -76,8 +79,8 @@ For example, `service-customers--rest` is a `service-customers` application comm
 and `service-customers--sns` is a `service-customers` application communicating over SNS (asynchronous messaging).
 
 The need to name Pacticipants depending on the communication protocol is because Pact uses
-different mechanisms for verifying contracts depending whether it's a synchronous HTTP-based protocol or asynchronous messaging.
-Pact `HTTP` contract tests use `pact.Verifier`, and Pact `Messaging` contract tests use `pact.MessageProvider`,
+different mechanisms for verifying contracts depending on whether it's a synchronous HTTP-based protocol or asynchronous messaging.
+Pact HTTP contract tests use `pact.Verifier`, and Pact asynchronous messaging contract tests use `pact.MessageProvider`,
 and they can't be mixed.
 
 - List of the example application's Pacticipants:
@@ -92,14 +95,17 @@ and they can't be mixed.
 
 ### Example Application's Pact Network Diagram
 
-Generated from Pact Broker's <http://localhost:9292/integrations> with
+Generated from Pact Broker's <http://localhost:9292/integrations> endpoint with
 [generate_pact_network_diagram.py](src/diagram/generate_pact_network_diagram.py) script.
 
 ![Pact network diagram](docs/pact/network.png)
 
 ### Run Pact Contract Tests locally with self-hosted Pact Broker
 
-...
+From [Pact Broker Introduction](https://docs.pact.io/pact_broker) page on Pact documentation website:
+
+> The Pact Broker is an application for sharing consumer driven contracts and verification results.
+> The Pact Broker is an open source tool that requires you to deploy, administer and host it yourself.
 
 - Install Pact CLI - [complete installation instruction on GitHub Releases page](https://github.com/pact-foundation/pact-ruby-standalone/releases).
 
@@ -158,10 +164,10 @@ pact-broker publish --auto-detect-version-properties \
 ![Pact Broker - contracts are not verified](docs/pact/01-pact-broker.png)
 
 - Verify `provider` contracts from the local Pact Broker.
-  The Pact `provider` tests will fetch latest contracts from the Pact Broker and run the tests against them.
+  The Pact `provider` tests will fetch the latest contracts from the Pact Broker and run the tests against them.
   Verification results will be published back to the Pact Broker
   because `PACT_PUBLISH_VERIFICATION_RESULTS` environment variable is set to `true`.
-  Usually, you would publish test results to the Pact Broker only in CI/CD pipeline,
+  Usually, you would publish test results to the Pact Broker only in the CI/CD pipeline,
   so when working on a production project, omit the environment variable when running tests locally.
 
 ```bash
@@ -175,11 +181,11 @@ PACT_PUBLISH_VERIFICATION_RESULTS=true poetry run pytest -m "provider"
 ### Run Pact Contract Tests with PactFlow.io
 
 PactFlow.io is a SaaS version of Pact Broker. It has a free tier for up to 5 integrations,
-which is suitable for a proof-of-concept.
+which is suitable for a proof-of-concept. Read more about PactFlow in the [PactFlow documentation](https://docs.pactflow.io/).
 
 - Create a free account on <https://pactflow.io>
 
-- Generate [read/write API token](https://docs.pactflow.io/docs/user-interface/settings/api-tokens/) for your PactFlow account
+- Generate [read/write API token](https://docs.pactflow.io/#configuring-your-api-token) for your PactFlow account
   and set environment variables:
 
 ```bash
@@ -193,8 +199,8 @@ export PACT_BROKER_BASE_URL=https://<your-account-name>.pactflow.io
 rm -r pacts/*.json
 ```
 
-- Run `consumer` tests. This time include `pactflow` marker to run only a subset of tests,
-  since PactFlow free tier has a limit of 5 integrations.
+- Run `consumer` tests. This time, include `pactflow` marker to run only a subset of tests,
+  since the PactFlow free tier has a limit of 5 integrations.
 
 ```bash
 poetry run pytest -m "consumer and pactflow"
@@ -237,13 +243,13 @@ first, before introducing mandatory blocking steps to the deployment pipeline.
 
 A short summary of topics covered by the [Pact CI/CD setup guide](https://docs.pact.io/pact_nirvana):
 
-1. Lean about Pact, talk and get team alignment to try it out
+1. Learn about Pact, talk, and get team alignment to try it out
 2. Get a single test working manually.
 3. Manually integrate with Pact Broker/PactFlow.
-4. Integrate Pact Broker/PactFlow to deployment pipeline.
+4. Integrate Pact Broker/PactFlow into the deployment pipeline.
 5. Use [Can-I-Deploy](https://docs.pact.io/pact_broker/can_i_deploy)
    to verify if the version of your application you're about to deploy
-   is compatible with other application that are already deployed in that environment
+   is compatible with other applications that are already deployed in that environment
    (not covered in this example project).
 6. Record deployments and releases to the Pact Broker/PactFlow
    (not covered in this example project).
@@ -262,7 +268,7 @@ From [github.com/pactflow/example-provider](https://github.com/pactflow/example-
 - Trigger the Provider Contract tests in the Provider CI/CD pipeline when a new Consumer contract version is published.
 - Get notified that changes in your Consumer contract are incompatible with the existing Provider contract,
   i.e. the Provider contract tests failed in the Provider CI/CD pipeline.
-- Before deploying a new version of the Consumer, verify that it's compatible with currently deployed
+- Before deploying a new version of the Consumer, verify that it's compatible with the currently deployed
   version of the Provider. Using [Can-I-Deploy](https://docs.pact.io/pact_broker/can_i_deploy) is one way of doing it.
 
 The example application uses GitHub Actions for running the deployment pipeline.
@@ -273,7 +279,7 @@ There're two deployment pipeline workflows:
   It builds and tests the application, including running Pact contract tests.
 - [pact-verify-provider-contract.yml](.github/workflows/pact-verify-provider-contract.yml) - a workflow
   that's triggered by a webhook from Pact Broker/PactFlow when a new Consumer contract version is published.
-  The workflow runs the Provider contract tests against the new Consumer contract version, and publishes
+  The workflow runs the Provider contract tests against the new Consumer contract version and publishes
   the verification results back to the Pact Broker/PactFlow.
 
 The examples in this project don't go the full way of setting up the deployment pipeline
@@ -287,7 +293,7 @@ For more examples, see:
 
 #### When the Consumer Changes
 
-- On new Consumer contract version - verify it against the Provider
+- On a new Consumer contract version - verify it against the Provider
   ([.github/workflows/pact-verify-provider-contract.yml](.github/workflows/pact-verify-provider-contract.yml)).
 
 ```mermaid
@@ -317,7 +323,7 @@ sequenceDiagram
     deactivate PactBroker
 ```
 
-- On new Consumer contract version - verification against the Provider failed.
+- On a new Consumer contract version - verification against the Provider failed.
   ([.github/workflows/pact-verify-provider-contract.yml](.github/workflows/pact-verify-provider-contract.yml)).
 
 ```mermaid
@@ -347,7 +353,7 @@ sequenceDiagram
     deactivate PactBroker
 ```
 
-- On new commit in Consumer repository, but Consumer contract hasn't changed -
+- On a commit in Consumer repository, but Consumer contract hasn't changed -
   automatically mark it as verified in Pact Broker/PactFlow without running the Provider contract tests.
 
 ```mermaid
@@ -369,7 +375,7 @@ sequenceDiagram
 
 #### When the Provider Changes
 
-- On new commit in Provider repository - verify Provider contract against Consumer contracts from Pact Broker/PactFlow
+- On a new commit in Provider repository - verify Provider contract against Consumer contracts from Pact Broker/PactFlow
   ([.github/workflows/build.yml](.github/workflows/build.yml)).
 
 ```mermaid
@@ -388,7 +394,7 @@ sequenceDiagram
     deactivate Provider
 ```
 
-- On new commit in Provider repository - Provider contract verification failed
+- On a new commit in the Provider repository - Provider contract verification failed
   ([.github/workflows/build.yml](.github/workflows/build.yml)).
 
 ```mermaid
@@ -417,9 +423,9 @@ to automate the configuration of Pact Broker/PactFlow.
 
 The example project uses Terraform for automating the configuration of PactFlow:
 
-- Creation of user accounts and teams
-- Creation of Pacticipants
-- Configuration of Webhooks
+- Creation of user accounts and teams.
+- Creation of Pacticipants.
+- Configuration of Webhooks.
 
 See [terraform-pactflow/](terraform-pactflow/) directory for the example Terraform configuration.
 

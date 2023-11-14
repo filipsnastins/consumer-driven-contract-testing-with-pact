@@ -1,10 +1,6 @@
 resource "pact_user" "default" {
-  name   = "Filips Nastins"
+  name   = var.default_user_name
   active = true
-  email  = "nastinsfilips@gmail.com"
+  email  = var.default_user_email
   type   = "user"
-
-  lifecycle {
-    prevent_destroy = true
-  }
 }
