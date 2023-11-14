@@ -2,11 +2,10 @@ from typing import Generator, cast
 
 import pytest
 from docker.models.images import Image as DockerImage
-from pact import Verifier
 from tomodachi_testcontainers.utils import get_available_port
 
 from tests.containers import FastAPIContainer
-from tests.pact_helpers import get_pact_verifier_options
+from tests.pact_helpers import Verifier
 
 pytestmark = [
     pytest.mark.order_history__graphql(),
@@ -43,7 +42,6 @@ def verifier(service_order_history_container: FastAPIContainer) -> Verifier:
 
 def test_verify_consumer_contracts(verifier: Verifier, service_order_history_container: FastAPIContainer) -> None:
     code, _ = verifier.verify_with_broker(
-        **get_pact_verifier_options(),
         provider_states_setup_url=f"{service_order_history_container.get_external_url()}/_pact/provider_states",
     )
     assert code == 0

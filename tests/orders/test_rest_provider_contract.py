@@ -2,11 +2,10 @@ from typing import Generator, cast
 
 import pytest
 from docker.models.images import Image as DockerImage
-from pact import Verifier
 from tomodachi_testcontainers import MotoContainer, TomodachiContainer
 from tomodachi_testcontainers.utils import get_available_port
 
-from tests.pact_helpers import get_pact_verifier_options
+from tests.pact_helpers import Verifier
 
 pytestmark = [pytest.mark.orders__rest(), pytest.mark.provider(), pytest.mark.order(2)]
 
@@ -41,7 +40,6 @@ def verifier(service_orders_container: TomodachiContainer) -> Verifier:
 
 def test_verify_consumer_contracts(verifier: Verifier, service_orders_container: TomodachiContainer) -> None:
     code, _ = verifier.verify_with_broker(
-        **get_pact_verifier_options(),
-        provider_states_setup_url=f"{service_orders_container.get_external_url()}/_pact/provider_states",
+        provider_states_setup_url=f"{service_orders_container.get_external_url()}/_pact/provider_states"
     )
     assert code == 0

@@ -79,10 +79,9 @@ async def test_get_non_existing_customer(pact: Pact, client: CustomerClient) -> 
         .will_respond_with(status=404, body=expected)
     )
 
-    with pact:
+    with pact, pytest.raises(CustomerNotFoundError):
         # Act & assert
-        with pytest.raises(CustomerNotFoundError):
-            await client.get(uuid.UUID("02f0a114-273d-4e40-af9e-129f8e3c193d"))
+        await client.get(uuid.UUID("02f0a114-273d-4e40-af9e-129f8e3c193d"))
 
 
 @pytest.mark.asyncio()

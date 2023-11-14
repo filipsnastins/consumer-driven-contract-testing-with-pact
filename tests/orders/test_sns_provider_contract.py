@@ -3,13 +3,12 @@ from asyncio import AbstractEventLoop
 from decimal import Decimal
 
 import pytest
-from pact import MessageProvider
 from pytest_mock import MockerFixture
 
 from orders import use_cases
 from orders.commands import ApproveOrderCommand, CreateOrderCommand
 from tests.fakes import InMemoryMessagePublisher, InMemoryOrderRepository
-from tests.pact_helpers import get_pact_verifier_options, proto_to_dict
+from tests.pact_helpers import MessageProvider, proto_to_dict
 
 pytestmark = [pytest.mark.orders__sns(), pytest.mark.provider(), pytest.mark.pactflow(), pytest.mark.order(2)]
 
@@ -82,4 +81,4 @@ def test_verify_consumer_contracts(event_loop: AbstractEventLoop, mocker: Mocker
     )
 
     with provider:
-        provider.verify_with_broker(**get_pact_verifier_options())
+        provider.verify_with_broker()
