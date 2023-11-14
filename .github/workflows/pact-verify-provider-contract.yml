@@ -28,7 +28,7 @@ on:
       pact_url:
         type: string
         description: Pact URL to verify
-        required: true
+        required: false
 
 jobs:
   build:
