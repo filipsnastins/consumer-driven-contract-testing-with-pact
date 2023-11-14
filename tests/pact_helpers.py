@@ -109,7 +109,7 @@ def get_verify_with_pact_url_options() -> PactVerifierOptions:
         provider_version_branch=os.getenv("GIT_BRANCH") or repo.active_branch.name,
         enable_pending=False,
         include_wip_pacts_since=None,
-        verbose=True,
+        verbose=bool(os.getenv("PACT_VERBOSE")),
     )
 
 
