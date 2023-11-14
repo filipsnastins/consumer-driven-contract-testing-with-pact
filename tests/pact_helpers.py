@@ -122,7 +122,7 @@ def get_pact_verify_with_broker_options() -> PactVerifierOptions:
 
 def create_proto_from_pact(proto_class: type[ProtoType], expected_message: dict | Matcher) -> ProtoType:
     generated_values = cast(dict, get_generated_values(expected_message))
-    return ParseDict(generated_values, proto_class(), ignore_unknown_fields=True)
+    return ParseDict(generated_values, proto_class())
 
 
 def proto_to_dict(data: ProtoMessage) -> dict:
