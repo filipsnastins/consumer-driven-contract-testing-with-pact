@@ -89,7 +89,7 @@ async def test_get_non_existing_order(pact: Pact, client: OrderClient) -> None:
     )
 
     with pact, pytest.raises(OrderNotFoundError):
-        # Act & assert
+        # Act & Assert
         await client.get(uuid.UUID("02f0a114-273d-4e40-af9e-129f8e3c193d"))
 
 

@@ -68,6 +68,7 @@ async def customer_credit_reserved_message_provider(mocker: MockerFixture) -> di
     ],
 )
 def test_verify_consumer_contracts(event_loop: AbstractEventLoop, mocker: MockerFixture, consumer: str) -> None:
+    # Arrange
     provider = MessageProvider(
         message_providers={
             "New customer is created": lambda: event_loop.run_until_complete(customer_created_message_provider(mocker)),
@@ -80,5 +81,6 @@ def test_verify_consumer_contracts(event_loop: AbstractEventLoop, mocker: Mocker
         pact_dir="pacts",
     )
 
+    # Act & Assert not raised
     with provider:
         provider.verify_with_broker()

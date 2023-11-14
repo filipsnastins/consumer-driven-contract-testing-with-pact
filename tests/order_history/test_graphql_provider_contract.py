@@ -41,7 +41,6 @@ def verifier(service_order_history_container: FastAPIContainer) -> Verifier:
 
 
 def test_verify_consumer_contracts(verifier: Verifier, service_order_history_container: FastAPIContainer) -> None:
-    code, _ = verifier.verify_with_broker(
+    verifier.verify_with_broker(
         provider_states_setup_url=f"{service_order_history_container.get_external_url()}/_pact/provider_states",
     )
-    assert code == 0

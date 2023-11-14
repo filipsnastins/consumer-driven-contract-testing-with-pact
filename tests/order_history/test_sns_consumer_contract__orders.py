@@ -43,6 +43,7 @@ async def service(mocker: MockerFixture, repository: InMemoryOrderHistoryReposit
 async def test_order_created(
     pact: MessagePact, service: ServiceOrderHistory, repository: InMemoryOrderHistoryRepository
 ) -> None:
+    # Arrange
     await use_cases.register_new_customer(
         RegisterNewCustomerCommand(
             customer_id=uuid.UUID("1e5df855-a757-4aa5-a55f-2ddf6930b250"),
@@ -50,7 +51,7 @@ async def test_order_created(
         ),
         repository,
     )
-
+    
     expected_message = {
         "customer_id": Term(Format.Regexes.uuid.value, "1e5df855-a757-4aa5-a55f-2ddf6930b250"),
         "order_id": Term(Format.Regexes.uuid.value, "f408cf27-8c53-486e-89f6-f0b45355b3ed"),
@@ -63,6 +64,7 @@ async def test_order_created(
     }
     pact.given("New order is created").expects_to_receive("OrderCreated event").with_content(expected_message)
 
+    # Act & Assert not raised
     with pact:
         data = create_proto_from_pact(proto.OrderCreated, expected_message)
         await service.order_created_handler(data, correlation_id=uuid.UUID("58b587a2-860c-4c4a-a9af-70457ffae596"))
@@ -72,6 +74,7 @@ async def test_order_created(
 async def test_order_approved(
     pact: MessagePact, service: ServiceOrderHistory, repository: InMemoryOrderHistoryRepository
 ) -> None:
+    # Arrange
     await use_cases.register_new_customer(
         RegisterNewCustomerCommand(
             customer_id=uuid.UUID("1e5df855-a757-4aa5-a55f-2ddf6930b250"),
@@ -97,6 +100,7 @@ async def test_order_approved(
         .with_content(expected_message)
     )
 
+    # Act & Assert not raised
     with pact:
         data = create_proto_from_pact(proto.OrderApproved, expected_message)
         await service.order_approved_handler(data, correlation_id=uuid.UUID("58b587a2-860c-4c4a-a9af-70457ffae596"))

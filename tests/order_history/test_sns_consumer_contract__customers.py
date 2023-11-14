@@ -38,12 +38,15 @@ async def service(mocker: MockerFixture, repository: InMemoryOrderHistoryReposit
 
 @pytest.mark.asyncio()
 async def test_customer_created(pact: MessagePact, service: ServiceOrderHistory) -> None:
+    # Arrange
     expected_message = {
         "customer_id": Term(Format.Regexes.uuid.value, "1e5df855-a757-4aa5-a55f-2ddf6930b250"),
         "name": Like("John Doe"),
     }
+
     pact.given("New customer is created").expects_to_receive("CustomerCreated event").with_content(expected_message)
 
+    # Act & Assert not raised
     with pact:
         data = create_proto_from_pact(proto.CustomerCreated, expected_message)
         await service.customer_created_handler(data, correlation_id=uuid.UUID("58b587a2-860c-4c4a-a9af-70457ffae596"))

@@ -68,6 +68,7 @@ async def order_approved_message_provider(mocker: MockerFixture) -> dict:
     ],
 )
 def test_verify_consumer_contracts(event_loop: AbstractEventLoop, mocker: MockerFixture, consumer: str) -> None:
+    # Arrange
     provider = MessageProvider(
         message_providers={
             "New order is created": lambda: event_loop.run_until_complete(order_created_message_provider()),
@@ -80,5 +81,6 @@ def test_verify_consumer_contracts(event_loop: AbstractEventLoop, mocker: Mocker
         pact_dir="pacts",
     )
 
+    # Act & Assert not raised
     with provider:
         provider.verify_with_broker()

@@ -1,5 +1,6 @@
 import os
-from typing import Any, TypedDict, TypeVar, cast
+from typing import TypedDict, TypeVar, cast
+from urllib.parse import urljoin
 
 import git
 import pact
@@ -59,16 +60,29 @@ class PactVerifierOptions(TypedDict):
 
 
 class Verifier(pact.Verifier):
-    def verify_pacts(self, *pact_urls: str) -> tuple[int, str | Any]:  # pylint: disable=arguments-differ
-        return super().verify_pacts(*pact_urls, **get_verify_with_pact_url_options())
+    def verify_pacts(  # pylint: disable=arguments-differ
+        self, *pact_urls: str, provider_states_setup_url: str | None = None
+    ) -> None:
+        return_code, _ = super().verify_pacts(
+            *pact_urls,
+            provider_states_setup_url=self._compose_provider_states_setup_url(provider_states_setup_url),
+            **get_verify_with_pact_url_options(),
+        )
+        assert return_code == 0, f"Expected returned_code = 0, actual = {return_code}"
 
     def verify_with_broker(  # pylint: disable=arguments-differ
         self, provider_states_setup_url: str | None = None
-    ) -> tuple[int, str | Any]:
-        return super().verify_with_broker(
-            provider_states_setup_url=provider_states_setup_url,
+    ) -> None:
+        return_code, _ = super().verify_with_broker(
+            provider_states_setup_url=self._compose_provider_states_setup_url(provider_states_setup_url),
             **get_pact_verify_with_broker_options(),
         )
+        assert return_code == 0, f"Expected returned_code = 0, actual = {return_code}"
+
+    def _compose_provider_states_setup_url(self, provider_states_setup_url: str | None) -> str | None:
+        if provider_states_setup_url is None:
+            return None
+        return urljoin(self.provider_base_url, provider_states_setup_url)
 
 
 class MessageProvider(pact.MessageProvider):
@@ -76,23 +90,17 @@ class MessageProvider(pact.MessageProvider):
 
     def verify(self) -> None:
         verifier = self._create_verifier()
-        pact_file = self._get_pact_file()
-        return_code, _ = verifier.verify_pacts(pact_file)
-        assert return_code == 0, f"Expected returned_code = 0, actual = {return_code}"
+        verifier.verify_pacts(f"{self.pact_dir}/{self._pact_file()}")
 
     def verify_with_broker(self) -> None:  # pylint: disable=arguments-differ
         verifier = self._create_verifier()
         if pact_url := os.getenv("PACT_URL"):
-            return_code, _ = verifier.verify_pacts(pact_url)
+            verifier.verify_pacts(pact_url)
         else:
-            return_code, _ = verifier.verify_with_broker()
-        assert return_code == 0, f"Expected returned_code = 0, actual = {return_code}"
+            verifier.verify_with_broker()
 
     def _create_verifier(self) -> Verifier:
         return Verifier(provider=self.provider, provider_base_url=self._proxy_url())
-
-    def _get_pact_file(self) -> str:
-        return f"{self.pact_dir}/{self._pact_file()}"
 
 
 def get_verify_with_pact_url_options() -> PactVerifierOptions:

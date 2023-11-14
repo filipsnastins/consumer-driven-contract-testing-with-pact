@@ -54,6 +54,7 @@ async def test_consume_order_created_event(
     repository: InMemoryCustomerRepository,
     publisher: InMemoryMessagePublisher,
 ) -> None:
+    # Arrange
     mocker.patch("customers.domain.uuid.uuid4", return_value=uuid.UUID("d3100f4f-c8a7-4207-a5e2-40aa122b4b33"))
     customer = await use_cases.create_customer(
         CreateCustomerCommand(
@@ -63,7 +64,7 @@ async def test_consume_order_created_event(
         repository,
         publisher,
     )
-
+    
     expected_message = {
         "correlation_id": Term(Format.Regexes.uuid.value, "23b2c005-a914-41ab-92d7-d8d4d8e98020"),
         "customer_id": Term(Format.Regexes.uuid.value, str(customer.id)),
@@ -77,6 +78,7 @@ async def test_consume_order_created_event(
     }
     pact.given("New order is created").expects_to_receive("OrderCreated event").with_content(expected_message)
 
+    # Act & Assert not raised
     with pact:
         data = create_proto_from_pact(proto.OrderCreated, expected_message)
         await service.order_created_handler(data, correlation_id=uuid.UUID("23b2c005-a914-41ab-92d7-d8d4d8e98020"))

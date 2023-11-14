@@ -69,11 +69,9 @@ async def test_get_all_customers(pact: Pact, client: OrderHistoryClient) -> None
         .will_respond_with(status=200, body=expected)
     )
 
+    # Act & Assert not raised
     with pact:
-        # Act
         customers = await client.get_all_customers()
-
-        # Assert
         assert customers == [
             Customer(
                 id=uuid.UUID("d3100f4f-c8a7-4207-a5e2-40aa122b4b33"),

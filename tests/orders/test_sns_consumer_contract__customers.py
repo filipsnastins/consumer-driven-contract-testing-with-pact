@@ -55,6 +55,7 @@ async def test_customer_credit_reserved(
     repository: InMemoryOrderRepository,
     publisher: InMemoryMessagePublisher,
 ) -> None:
+    # Arrange
     mocker.patch("orders.domain.uuid.uuid4", return_value=uuid.UUID("f408cf27-8c53-486e-89f6-f0b45355b3ed"))
     order = await use_cases.create_order(
         CreateOrderCommand(
@@ -77,6 +78,7 @@ async def test_customer_credit_reserved(
         .with_content(expected_message)
     )
 
+    # Act & Assert not raised
     with pact:
         data = create_proto_from_pact(proto.CustomerCreditReserved, expected_message)
         await service.customer_credit_reserved_handler(

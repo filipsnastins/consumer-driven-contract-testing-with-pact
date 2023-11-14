@@ -38,8 +38,5 @@ def verifier(service_orders_container: TomodachiContainer) -> Verifier:
     )
 
 
-def test_verify_consumer_contracts(verifier: Verifier, service_orders_container: TomodachiContainer) -> None:
-    code, _ = verifier.verify_with_broker(
-        provider_states_setup_url=f"{service_orders_container.get_external_url()}/_pact/provider_states"
-    )
-    assert code == 0
+def test_verify_consumer_contracts(verifier: Verifier) -> None:
+    verifier.verify_with_broker(provider_states_setup_url="/_pact/provider_states")
