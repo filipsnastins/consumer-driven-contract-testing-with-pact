@@ -7,12 +7,13 @@ name: Pact - Provider Contract Tests
 on:
   repository_dispatch:
     types:
-      - 'PactFlow: Provider contract requiring verification published'
+      - 'Pact: Consumer contract requiring verification published'
   workflow_dispatch:
     inputs:
       provider:
         type: choice
         description: Provider name
+        required: true
         default: all
         options:
           - all
@@ -24,16 +25,23 @@ on:
           - order_history__sns
           - orders__rest
           - orders__sns
+      pact_url:
+        type: string
+        description: Pact URL to verify
+        required: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
     env:
       DOCKER_BUILDKIT: 1
+      GIT_BRANCH: ${{ github.event.client_payload.branch }}
+      GIT_COMMIT: ${{ github.event.client_payload.sha }}
       PACT_BROKER_BASE_URL: ${{ secrets.PACT_BROKER_BASE_URL }}
       PACT_BROKER_TOKEN: ${{ secrets.PACT_BROKER_TOKEN }}
       PACT_PROVIDER: ${{ inputs.provider || github.event.client_payload.pytest_selector }}
       PACT_PUBLISH_VERIFICATION_RESULTS: true
+      PACT_URL: ${{ inputs.pact_url || github.event.client_payload.pact_url }}
       POETRY_VIRTUALENVS_CREATE: false
       PYTHONPATH: src:$PYTHONPATH
 
@@ -86,6 +94,3 @@ jobs:
       - name: ${{ github.event.client_payload.message || 'Run Pact Provider contract test (user run)' }}
         run: pytest -m "provider and pactflow and ${{ env.PACT_PROVIDER }}"
         if: ${{ env.PACT_PROVIDER != 'all' }}
-        env:
-          GIT_BRANCH: ${{ github.event.client_payload.branch }}
-          GIT_COMMIT: ${{ github.event.client_payload.sha }}
