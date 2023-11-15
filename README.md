@@ -445,6 +445,11 @@ started with PactFlow.
 
 ### Breaking Consumer Contract
 
+Testing of the Consumer contract changes happen in the Provider repository,
+because it's the Provider that should pull the new contract version and run the contract tests against it.
+The testing is integrated with the Pact Broker/Pact Flow, that triggers `contract requiring verification published`
+webhook to the CI/CD server (e.g. GitHub Actions) to run the tests in the Provider repository.
+
 Taking `service-customers--sns` as an example consumer. We'll change the expectation about
 the `order_total.units` format. Currently it expects a `string` value, but we'll change it to `integer`.
 
@@ -481,9 +486,25 @@ The workflow will run the Provider contract tests against the new Consumer contr
 This process should happen automatically, and the `service-customers--sns` Consumer team shortly will be notified
 that their changes are incompatible with the existing `service-orders--sns` Provider contract.
 
-- The workflow in the Provider repository will fail with the following error:
+- The [workflow in the Provider repository](https://github.com/filipsnastins/consumer-driven-contract-testing-with-pact-python/actions/runs/6868498483/job/18679182936)
+  will fail with the following error:
 
 ```diff
+Failures:
+
+  1) Verifying a pact between service-customers--sns and service-orders--sns Given New order is created OrderCreated event has matching content
+     Failure/Error: expect(actual_contents).to match_term expected_contents, diff_options, example
+
+       Actual:
+        {
+          "event_id": "fddf40ed-9c73-418b-9e12-bbf3ecc59f67",
+          "correlation_id": "58b587a2-860c-4c4a-a9af-70457ffae596",
+          "order_id": "c7a3ced2-163c-44a7-8996-7604ed0194ad",
+          "customer_id": "1e5df855-a757-4aa5-a55f-2ddf6930b250",
+          "order_total": { "units": "123", "nanos": 990000000 },
+          "created_at": "2023-11-14T19:25:21.425832+00:00"
+        }
+
 Diff
 --------------------------------------
 Key: - is expected
@@ -499,7 +520,7 @@ Matching keys and values are not shown
 
 Description of differences
 --------------------------------------
-* Expected an Integer (like 100) but got a String ("123") at $.order_total.units
+* Expected an Integer (like 100) but got a String ("123") at $.order_total.unit
 ```
 
 This should spark a conversation between the teams (or colleagues on the same team if their own the Provider service)
@@ -515,7 +536,60 @@ _PactFlow - contract is in the Failed state_
 
 ### Breaking Provider Contract
 
-... TODO
+Unlike testing breaking changes from the Consumer side, the Provider contract side happens exclusively inside the
+Provider repository. It's because the Provider tests will fetch the latest contract version from Pact Broker/PactFlow,
+and it doesn't have to trigger the deployment pipeline in the Consumer repository.
+This way, the Provider development team gets very quick feedback from their tests - by running the tests locally or
+in their own deployment pipeline.
+
+- Taking the `service-customers--sns` as an example provider, go to [events.py](src/customers/events.py)
+  and break the contract by setting the field `name` to an empty string.
+  Since the Consumer `server-order-history--sns` depends on the `name` field, the contract will be broken.
+
+```diff
+--- a/src/customers/events.py
++++ b/src/customers/events.py
+@@ -31,7 +31,7 @@ class CustomerCreatedEvent:
+             event_id=str(self.event_id),
+             correlation_id=str(self.correlation_id),
+             customer_id=str(self.customer_id),
+-            name=self.name,
++            name="",
+             created_at=self.created_at.isoformat(),
+         )
+```
+
+- Run the Provider contract tests locally with `pytest -m "provider and customers__sns"` command and observe the failure.
+  The Provider team got the immediate feedback that their changes are incompatible with the existing Consumer contract.
+
+```diff
+Failures:
+
+  1) Verifying a pact between service-order-history--sns and service-customers--sns Given New customer is created CustomerCreated event has matching content
+     Failure/Error: expect(actual_contents).to match_term expected_contents, diff_options, example
+
+       Actual:
+        {
+          "event_id": "1e5df855-a757-4aa5-a55f-2ddf6930b250",
+          "correlation_id": "293178a5-4838-4e6a-8d63-18062093027e",
+          "customer_id": "1e5df855-a757-4aa5-a55f-2ddf6930b250",
+          "created_at": "2023-11-15T12:49:25.208438+00:00"
+        }
+
+Diff
+--------------------------------------
+Key: - is expected
+    + is actual
+Matching keys and values are not shown
+
+{
+-  "name": String
+}
+
+Description of differences
+--------------------------------------
+* Could not find key "name" (keys present are: event_id, correlation_id, customer_id, created_at) at $
+```
 
 ## Limitations and Corner Cases
 
