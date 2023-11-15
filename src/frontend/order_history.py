@@ -28,7 +28,6 @@ class OrderHistoryClient:
     async def get_all_customers(self) -> list[Customer]:
         graphql_query = "{getAllCustomers {id name orders {id orderTotal state}}}"
         response = await self._client.post("/graphql", json={"query": graphql_query})
-        print(json.dumps({"query": graphql_query}))
         body = response.json()
         return [
             Customer(

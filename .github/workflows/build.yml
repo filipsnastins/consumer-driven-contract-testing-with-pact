@@ -46,6 +46,10 @@ jobs:
           curl -fsSL https://raw.githubusercontent.com/pact-foundation/pact-ruby-standalone/master/install.sh | PACT_CLI_VERSION=v2.0.10 bash
           echo "$HOME/pact/bin/pact-broker" >> $GITHUB_PATH
 
+      - uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: '1.5.5'
+
       - name: Install Poetry
         run: |
           curl -sSL https://install.python-poetry.org | POETRY_HOME="$HOME/.poetry" python - --yes
