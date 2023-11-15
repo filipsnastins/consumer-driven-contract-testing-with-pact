@@ -30,6 +30,9 @@ An example of applying Consumer-Driven Contract Testing (CDC) for testing micros
       - [When the Consumer Changes](#when-the-consumer-changes)
       - [When the Provider Changes](#when-the-provider-changes)
     - [Configuring Pact Broker/PactFlow with Terraform](#configuring-pact-brokerpactflow-with-terraform)
+  - [Testing Breaking Changes in Contracts with Pact](#testing-breaking-changes-in-contracts-with-pact)
+    - [Breaking Consumer Contract](#breaking-consumer-contract)
+    - [Breaking Provider Contract](#breaking-provider-contract)
   - [Limitations and Corner Cases](#limitations-and-corner-cases)
   - [References](#references)
   - [Development](#development)
@@ -162,6 +165,7 @@ pact-broker publish --auto-detect-version-properties \
   against the `providers` yet.
 
 ![Pact Broker - contracts are not verified](docs/pact/01-pact-broker.png)
+_Pact Broker - contracts are not verified_
 
 - Verify `provider` contracts from the local Pact Broker.
   The Pact `provider` tests will fetch the latest contracts from the Pact Broker and run the tests against them.
@@ -177,6 +181,7 @@ PACT_PUBLISH_VERIFICATION_RESULTS=true poetry run pytest -m "provider"
 - Refresh Pact Broker UI (<http://localhost:9292>) and you should that all contracts have been verified.
 
 ![Pact Broker - contracts are verified](docs/pact/02-pact-broker.png)
+_Pact Broker - contracts are verified_
 
 ### Run Pact Contract Tests with PactFlow.io
 
@@ -214,6 +219,7 @@ pact-broker publish --auto-detect-version-properties pacts
 ```
 
 ![PactFlow - contracts are not verified](docs/pact/03-pactflow.png)
+_PactFlow - contracts are not verified_
 
 - Verify Pacts and publish verification results.
   Usually, you would publish test results to the Pact Broker only in CI/CD pipeline,
@@ -224,6 +230,7 @@ PACT_PUBLISH_VERIFICATION_RESULTS=true pytest -m "provider and pactflow"
 ```
 
 ![PactFlow - contracts are verified](docs/pact/04-pactflow.png)
+_PactFlow - contracts are verified_
 
 ## Running Pact in a Deployment Pipeline (CI/CD)
 
@@ -429,26 +436,112 @@ The example project uses Terraform for automating the configuration of PactFlow:
 
 See [terraform-pactflow/](terraform-pactflow/) directory for the example Terraform configuration.
 
+## Testing Breaking Changes in Contracts with Pact
+
+In this section we'll test that Pact detects breaking changes in both the Consumer and Producer contracts,
+and observe how PactFlow displays the results.
+See [Run Pact Contract Tests with PactFlow.io](#run-pact-contract-tests-with-pactflowio) section for getting
+started with PactFlow.
+
+### Breaking Consumer Contract
+
+Taking `service-customers--sns` as an example consumer. We'll change the expectation about
+the `order_total.units` format. Currently it expects a `string` value, but we'll change it to `integer`.
+
+- In the [test_sns_consumer_contract\_\_orders.py](tests/customers/test_sns_consumer_contract__orders.py),
+  change `order_total.units` from `string` to `integer`. Protobuf will still serialize the value as a `string`,
+  but the contract will expect an `integer`, which will cause the contract test to fail.
+
+```diff
+--- a/tests/customers/test_sns_consumer_contract__orders.py
++++ b/tests/customers/test_sns_consumer_contract__orders.py
+@@ -70,7 +70,7 @@ async def test_consume_order_created_event(
+         "order_id": Term(Format.Regexes.uuid.value, "cc935616-e439-45a9-89ed-c6ef32bbc59e"),
+         "order_total": Like(
+             {
+-                "units": "100",
++                "units": 100,
+                 "nanos": 990000000,
+             }
+```
+
+- Commit the changes under a new branch, e.g. `test/break-consumer-contract`.
+  This will trigger the deployment pipeline and the new contract version will be published to PactFlow.
+
+![PactFlow - contract is in the Unverified state](docs/pact/05-pactflow-breaking-consumer-contract.png)
+_PactFlow - contract is in Unverified state_
+
+If the PactFlow is configured to work in a CI/CD pipeline as per the example in
+[Running Pact in a Deployment Pipeline (CI/CD)](#running-pact-in-a-deployment-pipeline-cicd) section,
+the new Consumer contract version will trigger `contract requiring verification published` event in PactFlow.
+The PactFlow event will send a webhook to GitHub, which will trigger the
+[pact-verify-provider-contract.yml](.github/workflows/pact-verify-provider-contract.yml) GitHub Actions workflow.
+
+The workflow will run the Provider contract tests against the new Consumer contract version and publish the verification results.
+This process should happen automatically, and the `service-customers--sns` Consumer team shortly will be notified
+that their changes are incompatible with the existing `service-orders--sns` Provider contract.
+
+- The workflow in the Provider repository will fail with the following error:
+
+```diff
+Diff
+--------------------------------------
+Key: - is expected
+    + is actual
+Matching keys and values are not shown
+
+{
+  "order_total": {
+-    "units": Integer
++    "units": String
+  }
+}
+
+Description of differences
+--------------------------------------
+* Expected an Integer (like 100) but got a String ("123") at $.order_total.units
+```
+
+This should spark a conversation between the teams (or colleagues on the same team if their own the Provider service)
+about the changes in the contract and the best way to proceed with the changes.
+
+![PactFlow - contract is in the Failed state](docs/pact/06-pactflow-breaking-consumer-contract.png)
+_PactFlow - contract is in the Failed state_
+
+- To fix the contract, change `order_total.units` back to `string`, commit and push the changes to GitHub.
+  This time, the `contract requiring verification published` event won't be triggered,
+  because the Consumer contract returned to its previous state and has been already verified,
+  so triggering the Provider contract verification is not necessary.
+
+### Breaking Provider Contract
+
+... TODO
+
 ## Limitations and Corner Cases
 
 - Pacticipant name must include a communication protocol, .e.g `--rest` or `--sns`.
   Due to Pact handling synchronous HTTP and asynchronous messaging contract tests differently,
   they can't be mixed in the same Pacticipant.
+
 - Due to the above, a single service can have multiple Pacticipants, one for each communication protocol
   the service supports. To run tests against the specific protocol, e.g. in the case
   when a Consumer contract has changed and you need to verify it against the specific Provider's protocol,
   you would need to use `pytest` markers and test selectors (`pytest -m "orders__sns"`).
   This is implemented in this example project.
-- GraphQL Contract Testing - queries and mutations must be formatted in the same way as in the contract,
-  including spaces and new lines, otherwise Pact Mock Server would not be able to match the request body.
-  The easiest way would be to always "minify" (remove all whitespace and newlines) the GraphQL queries and mutations
+
+- GraphQL contract testing with python-pact - queries and mutations must be formatted in the same way as in the contract,
+  including spaces and new lines, otherwise Pact Mock Server would not be able to match the request body
+  (when the request is not JSON, Pact Mock Server does the full string match; GraphQL request is a string).
+  One way out would be to always "minify" (remove all whitespace and newlines) the GraphQL queries and mutations
   before sending the requests.
 
 ## References
 
 - <https://docs.pact.io>
+
 - <https://pactflow.io/blog/the-case-for-contract-testing-protobufs-grpc-avro> -
-  the need for contract testing even when using Protobuf and similar protocols.
+  the case for contract testing Protobufs, gRPC and Avro.
+
 - Pact CI/CD configuration examples:
   - <https://docs.pact.io/pact_nirvana>
   - <https://github.com/pactflow/example-consumer>
