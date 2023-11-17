@@ -11,7 +11,7 @@ from strawberry.fastapi import GraphQLRouter
 from adapters import sqlalchemy
 from adapters.settings import get_fastapi_app_settings
 from order_history import views
-from order_history.pact import setup_pact_provider_state
+from order_history.pact_provider_state import setup_pact_provider_state
 from order_history.repository import Base, SQLAlchemyOrderHistoryRepository
 
 logger: structlog.stdlib.BoundLogger = structlog.get_logger()

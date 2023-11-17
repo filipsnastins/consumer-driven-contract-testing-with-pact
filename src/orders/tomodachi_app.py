@@ -11,7 +11,7 @@ from orders import use_cases, views
 from orders.commands import ApproveOrderCommand, CreateOrderCommand
 from orders.domain import OrderNotFoundError
 from orders.events import OrderApprovedEvent, OrderCreatedEvent
-from orders.pact import setup_pact_provider_state
+from orders.pact_provider_state import setup_pact_provider_state
 from orders.repository import DynamoDBOrderRepository
 from service_layer.tomodachi_bootstrap import TomodachiServiceBase
 

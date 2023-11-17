@@ -11,7 +11,7 @@ from customers import use_cases, views
 from customers.commands import CreateCustomerCommand, ReserveCustomerCreditCommand
 from customers.domain import CustomerNotFoundError
 from customers.events import CustomerCreatedEvent, CustomerCreditReservedEvent
-from customers.pact import setup_pact_provider_state
+from customers.pact_provider_state import setup_pact_provider_state
 from customers.repository import DynamoDBCustomerRepository
 from service_layer.tomodachi_bootstrap import TomodachiServiceBase
 
