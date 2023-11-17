@@ -41,6 +41,9 @@ export TF_VAR_default_user_email=<your-email>
 terraform init
 ```
 
+- We'll have to import default user and team to Terraform resources because Pact Terraform provider
+  doesn't support [data sources](https://developer.hashicorp.com/terraform/language/data-sources).
+
 - Import default user to Terraform state.
   You can find your user `uuid` through the HAL browser with `GET /admin/users` at
   <https://your-account-name.pactflow.io/hal-browser/browser.html#https://your-account-name.pactflow.io/admin/users>.

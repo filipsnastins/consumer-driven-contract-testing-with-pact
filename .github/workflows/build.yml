@@ -19,7 +19,7 @@ jobs:
       PACT_BROKER_TOKEN: ${{ secrets.PACT_BROKER_TOKEN }}
       PACT_PUBLISH_VERIFICATION_RESULTS: true
       POETRY_VIRTUALENVS_CREATE: false
-      PYTHONPATH: src:test:$PYTHONPATH
+      PYTHONPATH: src:$PYTHONPATH
     strategy:
       max-parallel: 1
       matrix:

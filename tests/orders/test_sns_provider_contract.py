@@ -70,7 +70,9 @@ def test_verify_consumer_contracts(event_loop: AbstractEventLoop, mocker: Mocker
             ),
         },
         provider="service-orders--sns",
-        consumer="",  # Running tests for all consumers
+        # Running tests for all consumers with `provider.verify_with_broker`
+        # When using `provider.verify`, make sure to include the consumer name
+        consumer="",
         pact_dir="pacts",
     )
 

@@ -56,7 +56,7 @@ pytest-env = ">=1.0.1"
 pytest-mock = ">=3.12.0"
 pytest-order = "^1.1.0"
 ruff = ">=0.1.1"
-tomodachi-testcontainers = ">=0.10.2"
+tomodachi-testcontainers = ">=0.10.4"
 types-protobuf = ">=4.24.0.2"
 
 [build-system]
