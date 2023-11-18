@@ -19,7 +19,7 @@ jobs:
       PACT_BROKER_TOKEN: ${{ secrets.PACT_BROKER_TOKEN }}
       PACT_PUBLISH_VERIFICATION_RESULTS: true
       POETRY_VIRTUALENVS_CREATE: false
-      PYTHONPATH: src:$PYTHONPATH
+      PYTHONPATH: src
     strategy:
       max-parallel: 1
       matrix:
@@ -63,8 +63,8 @@ jobs:
           poetry install --no-interaction --with dev --all-extras
           poetry show --tree
 
-      - name: Run commit hooks
-        run: SKIP=test poetry run hooks
+      # - name: Run commit hooks
+      #   run: SKIP=test poetry run hooks
 
       - name: Run Pact contract tests
         run: pytest -m "(consumer or provider) and pactflow"

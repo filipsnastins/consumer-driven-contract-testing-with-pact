@@ -18,6 +18,7 @@ An example of applying Consumer-Driven Contract Testing (CDC) for testing micros
   - [What is Contract Testing](#what-is-contract-testing)
   - [Consumer-Driven Contract Testing](#consumer-driven-contract-testing)
   - [Pact as a Consumer-Driven Contract Testing Tool](#pact-as-a-consumer-driven-contract-testing-tool)
+  - [What Contract Testing is Not](#what-contract-testing-is-not)
   - [Example Application Architecture (C4)](#example-application-architecture-c4)
     - [System Context Diagram](#system-context-diagram)
     - [Container Diagram](#container-diagram)
@@ -31,8 +32,10 @@ An example of applying Consumer-Driven Contract Testing (CDC) for testing micros
       - [When the Provider Changes](#when-the-provider-changes)
     - [Configuring Pact Broker/PactFlow with Terraform](#configuring-pact-brokerpactflow-with-terraform)
   - [Testing Breaking Changes in Contracts with Pact](#testing-breaking-changes-in-contracts-with-pact)
+    - [Contract Testing Protobufs and Similar Structured Data Serialization Formats](#contract-testing-protobufs-and-similar-structured-data-serialization-formats)
     - [Breaking Consumer Contract](#breaking-consumer-contract)
     - [Breaking Provider Contract](#breaking-provider-contract)
+  - [Contract Testing Beyond Catching Breaking Changes](#contract-testing-beyond-catching-breaking-changes)
   - [Limitations and Corner Cases](#limitations-and-corner-cases)
   - [References](#references)
   - [Development](#development)
@@ -61,6 +64,10 @@ An example of applying Consumer-Driven Contract Testing (CDC) for testing micros
 - [ ] Testing syntax vs semantics
 - [ ] Testing Protobufs
 - [ ] Link to python-pact library and examples
+
+## What Contract Testing is Not
+
+- [ ] ...
 
 ## Example Application Architecture (C4)
 
@@ -126,7 +133,7 @@ poetry shell
 - Set PYTHONPATH to include `src` directory.
 
 ```bash
-export PYTHONPATH=src:$PYTHONPATH
+export PYTHONPATH=src:tests:$PYTHONPATH
 ```
 
 - Run example application and Pact Broker locally with Docker Compose.
@@ -238,11 +245,11 @@ For a complete guide of integrating Pact into your CI/CI workflow, take a look a
 [Pact documentation - CI/CD setup guide](https://docs.pact.io/pact_nirvana).
 
 The Pact guide covers more than just configuring Pact in the CI/CD pipeline,
-but first getting the team aligned on the process of contract testing,
+but first getting the team aligned on the process of Contract Testing,
 and getting started with the simplest and non-intrusive setup that will let
 you evaluate if Contract Testing and Pact are a good fit for your project.
 
-Since contract testing is a collaboration technique, it's important to get the team on board
+Since Contract Testing is a collaboration technique, it's important to get the team on board
 first, before introducing mandatory blocking steps to the deployment pipeline.
 
 > Contracts are not a replacement for good communication between or within teams.
@@ -443,6 +450,50 @@ and observe how PactFlow displays the results.
 See [Run Pact Contract Tests with PactFlow.io](#run-pact-contract-tests-with-pactflowio) section for getting
 started with PactFlow.
 
+### Contract Testing Protobufs and Similar Structured Data Serialization Formats
+
+The example application uses [Protobuf](https://protobuf.dev/) for serializing structured data
+in the asynchronous messaging between services over AWS SNS SQS.
+
+Protobuf (Protocol Buffers) is a language-neutral, platform-neutral extensible mechanisms for serializing structured data.
+Protobuf is schema-driven and has built-in versioning or backwards/forwards compatibility.
+With Protobuf, Consumers and Producers can work with different versions of the schema at the same time,
+and they will continue to work as long as the changes are backwards/forwards compatible.
+
+> That is an extremely valuable feature when you’re dealing with a big production system,
+> because it allows you to update different components of the system independently,
+> at different times, without worrying about compatibility.
+> — _<https://pactflow.io/blog/the-case-for-contract-testing-protobufs-grpc-avro/>_
+
+Protobuf is a schema-driven format, and having a defined schema if very important when working with
+big production systems. However, just adhering to the schema is not enough to ensure compatibility between
+the Consumer and Provider. Therefore, it's important to distinguish `schema` with `contract semantics`.
+
+The Protobuf definition schema is a syntactic construct which doesn't enforce any semantic meaning
+to the data. The contract semantics is the meaning of the data, and Contract Testing allows us to verify
+that a Consumer not only able to parse the data with a schema, but also _understand_ the meaning of the data.
+
+For Protobuf schema management it's worth mentioning [buf.build](https://buf.build/docs).
+buf.build is a Protobuf schema management tool that helps you define, lint, and generate
+code for your Protobuf schema. One of it's advantages is a schema breaking change detection tool,
+that will help you catch syntactic breaking changes.
+For detecting semantic breaking changes, you would still need to use Contract Testing.
+
+Read more about the case case for Contract Testing Protobufs and similar
+interface definition languages (IDL) in the Pact blog:
+
+- <https://pactflow.io/blog/the-case-for-contract-testing-protobufs-grpc-avro>
+- <https://pactflow.io/blog/contract-testing-for-grpc-and-protobufs/>
+
+For more benefits of Contract Testing beyond catching breaking changes (both syntactic and semantic),
+see [Contract Testing Beyond Catching Breaking Changes](#contract-testing-beyond-catching-breaking-changes) section.
+
+Pact supports testing Protobuf contracts with a Protobuf plugin.
+At the time of writing, Pact Plugin for Protobuf was not available in the Python Pact library,
+so the example project converts Protobuf messages to JSON and tests them as JSON contracts.
+See more [Pact Protobuf testing examples](https://docs.pact.io/implementation_guides/pact_plugins/examples/protobuf)
+in the Pact documentation.
+
 ### Breaking Consumer Contract
 
 Testing of the Consumer contract changes happen in the Provider repository,
@@ -591,6 +642,46 @@ Description of differences
 * Could not find key "name" (keys present are: event_id, correlation_id, customer_id, created_at) at $
 ```
 
+## Contract Testing Beyond Catching Breaking Changes
+
+The benefits of Contract Testing go beyond catching breaking changes in the contract,
+both syntactic and semantic, before release to production.
+
+- Consumer-Driven Contract Testing is more than a testing approach.
+  Used a collaboration technique, it helps to establish clear lines of communication and collaboration
+  between microservices and teams that consume them.
+
+- Ensures that compatible versions of the Consumer and Provider are deployed to production,
+  e.g. by using Pact's [Can-I-Deploy](https://docs.pact.io/pact_broker/can_i_deploy) tool.
+
+- Provides full visibility into a Provider usage - Consumer-Driven Contract Testing gives the Provider team
+  visibility into how their service is being used by Consumers.
+  All the contracts are stored in a centralized place like Pact Broker/PactFlow,
+  and the Provider team can see all the Consumers that depend on their service.
+  It helps discovering unused fields and messages that are not used by any Consumers,
+  and misunderstandings about the Provider usage.
+
+- [Specification by example](https://gojko.net/books/specification-by-example/) -
+  Consumer-Driven Contract Testing facilitates the collaboration
+  between the Consumer and Provider teams of defining the contract, driven by real-world
+  examples of how the Consumer uses the Provider, rather than using abstract requirements.
+  As a result, the Consumer and Provider teams will have a better shared understanding
+  of the contract and the business domain.
+
+- Living documentation - since Consumer-Driven contracts were defined by real-world examples,
+  they can be used as a living documentation of how the Consumer uses the Provider.
+  The contracts are always up to date and reflect the current state of Consumer/Provider relationships.
+  The contract examples can be used as a reference when onboarding new team members,
+  as a base for discussing new feature implementations, and in many other useful ways.
+
+- Consumer/Provider network map - the contracts stored in Pact Broker/PactFlow can be used
+  to generate a network map of the Consumer/Provider relationships.
+  It's a useful tool for visualizing the dependencies between services and teams.
+  See [example Application's Pact Network Diagram](#example-applications-pact-network-diagram) section.
+
+- Transport concerns like HTTP verbs, paths, headers and messaging topic names
+  may be encapsulated in a contract.
+
 ## Limitations and Corner Cases
 
 - Pacticipant name must include a communication protocol, .e.g `--rest` or `--sns`.
@@ -603,7 +694,7 @@ Description of differences
   you would need to use `pytest` markers and test selectors (`pytest -m "orders__sns"`).
   This is implemented in this example project.
 
-- GraphQL contract testing with python-pact - queries and mutations must be formatted in the same way as in the contract,
+- GraphQL Contract Testing with python-pact - queries and mutations must be formatted in the same way as in the contract,
   including spaces and new lines, otherwise Pact Mock Server would not be able to match the request body
   (when the request is not JSON, Pact Mock Server does the full string match; GraphQL request is a string).
   One way out would be to always "minify" (remove all whitespace and newlines) the GraphQL queries and mutations
@@ -611,15 +702,29 @@ Description of differences
 
 ## References
 
+- <https://martinfowler.com/articles/consumerDrivenContracts.html>
+
+- <https://martinfowler.com/bliki/ContractTest.html>
+
 - <https://docs.pact.io>
 
-- <https://pactflow.io/blog/the-case-for-contract-testing-protobufs-grpc-avro> -
-  the case for contract testing Protobufs, gRPC and Avro.
+- [Building Microservices, 2nd Edition](https://samnewman.io/books/building_microservices_2nd_edition/) - book by Sam Newman.
+  Chapter 9 - Testing.
+
+- The case for Contract Testing Protobufs, gRPC and Avro:
+
+  - <https://pactflow.io/blog/the-case-for-contract-testing-protobufs-grpc-avro>
+  - <https://pactflow.io/blog/contract-testing-for-grpc-and-protobufs/>
 
 - Pact CI/CD configuration examples:
+
   - <https://docs.pact.io/pact_nirvana>
   - <https://github.com/pactflow/example-consumer>
   - <https://github.com/pactflow/example-provider>
+
+- Other Contract Testing tools:
+  - <https://spring.io/projects/spring-cloud-contract>
+  - <https://specmatic.in>
 
 ## Development
 
@@ -686,8 +791,7 @@ poetry run format
 poetry run lint
 ```
 
-- Run tests.
-  Test execution order is configured with `pytest-order` to run `consumer` tests first, then `provider` tests.
+- Run tests. Test execution order is configured with `pytest-order` to run `consumer` tests first, then `provider` tests.
 
 ```bash
 poetry run test
