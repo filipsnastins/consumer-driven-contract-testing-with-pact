@@ -81,14 +81,17 @@ significant drawbacks _at a certain scale point_:
   As the system grows and more end-to-end tests are added, the test execution time will grow super-linearly.
   An alternative to running all the tests at once is to run only a subset of tests that concern a particular microservice's
   business domain, but that will increase the risk of missing a breaking change in other parts of the system.
+
 - End-to-end tests are brittle and flaky. Since they depend on the whole system and the state of a testing environment,
   many factors can cause the tests to fail, even if the system is working correctly.
   Flaky tests erode the trust in the test suite and the whole deployment pipeline.
+
 - Since all the teams will depend on the same testing environment, there's a possibility of a queue forming for running the tests.
   While one team is working on fixing a failing test that fails the whole deployment pipeline, other teams will have to wait.
   This will increase the deployment lead time, ultimately reducing the number of deployments,
   since teams will have to wait for their turn to test their changes. You can scale the number of testing environments
   or have a dedicated testing environment for each team, but only up to a certain point due to the infrastructure and maintenance costs.
+
 - End-to-end test ownership without introducing dependencies between teams is a challenge.
   A single end-to-end test might span across many microservices and internal team boundaries, testing bigger features as a whole.
   Therefore, an organization might have a dedicated test automation team that writes the end-to-end tests.
@@ -110,9 +113,10 @@ The drawbacks of end-to-end tests can be mitigated by adjusting the scope of the
 experimenting with test ownership and test environment availability, but the fundamental problem of
 end-to-end tests are that _they don't scale well as the system grows_.
 
-Take a look at Emily Bache's talk "End-to-End Automated Testing in a Microservices Architecture"
-to learn more techniques for keeping end-to-end test suite manageable - <https://www.youtube.com/watch?v=vq8o_AFfHhE>.
-For more overall guidance on testing microservices, see <https://martinfowler.com/articles/microservice-testing/>.
+Take a look at Emily Bache's talk "[End-to-End Automated Testing in a Microservices Architecture](https://www.youtube.com/watch?v=vq8o_AFfHhE)"
+to learn more techniques for keeping end-to-end test suite manageable.
+For more overall guidance on testing microservices,
+see "[Testing Strategies in a Microservice Architecture](https://martinfowler.com/articles/microservice-testing/)".
 
 **For testing microservice compatibility, an alternative approach to integrated end-to-end testing is contract testing.**
 
@@ -184,11 +188,15 @@ _Source: <https://docs.pact.io/#what-is-contract-testing>_
 
 - When a Provider team is not using the same contract-testing tool as the Consumer, e.g. Pact.
   It will create a lot of friction and misalignments.
+
 - When you don't have control over a Consumer or Provider, e.g. one of them is a third-party service.
+
 - When Consumer and Provider teams don't have a good communication channel.
   Contract testing will require good collaboration, otherwise teams will be blocking each other by
   breaking each other's contract tests and not fixing the problems timely.
+
 - Testing public APIs when number of Consumers is unknown.
+
 - Performance and load testing, functional testing, UI testing.
   Check out "[Testing Strategies in a Microservice Architecture](https://martinfowler.com/articles/microservice-testing/)"
   presentation to find a correct testing strategy for each of those use cases.
@@ -262,7 +270,7 @@ poetry shell
 - Set PYTHONPATH to include `src` directory.
 
 ```bash
-export PYTHONPATH=src:tests:$PYTHONPATH
+export PYTHONPATH=src:$PYTHONPATH
 ```
 
 - Run example application and Pact Broker locally with Docker Compose.
@@ -773,33 +781,47 @@ Description of differences
 
 ## Best Practices for Writing Consumer Contract Tests with Pact
 
-Based on "Best practices for writing consumer tests" by Beth Skurrie - <https://www.youtube.com/watch?v=oPuHb9Rl8Zo>.
+Based on "[Best practices for writing consumer tests](https://www.youtube.com/watch?v=oPuHb9Rl8Zo)" by Beth Skurrie.
 Watch the full video!
 
 - The key is knowing what _not_ to test.
+
 - Keep the scope of contract tests limited.
   Ideally, test only the components of your application that interact with a Provider in isolation.
   Since the Contract Tests are not a replacement for functional tests, you don't need to test
   the whole application end-to-end. Read more at ["Testing scope"](https://docs.pact.io/getting_started/testing-scope).
+
 - Don't use Pact for the functional testing of Consumers or Providers.
+
 - Don't use Pact for testing business logic or UI.
+
 - Don't write too restrictive Pact matchers. Make your response expectations as loose as possible.
+
 - Try to use BDD style notation to describe the business actions, rather than describing
   HTTP or messaging mechanisms. The contract tests should read like a proper, coherent sentence.
+
   - Use Pact's `given`, `upon_receiving`, `with_request` and `will_respond_with`
     constructs to describe a business action.
+
 - Use deterministic data. Avoid random data in your Pacts because it will mark a contract as changed,
   when in fact it hasn't.
+
 - Don't be afraid of duplication between functional and contract tests.
+
   - You can use fakes and mocks in contract tests to simplify and limit their scope.
   - Functional tests that use real components will catch all functional bugs.
     It's not in the scope of contract tests.
+
 - It's not the job of the Consumer to be a test harness for the Provider.
+
 - Responses can have extra keys without failing the verification, but requests cannot - Postel's law.
+
 - Contract tests aren't designed to operate alone.
   Contract tests _supplement_ unit, functional, and all other types of tests.
+
 - Contract tests focus only on the messages (requests and responses).
   Functional tests also check for side effects.
+
 - Don't check for side effects in contract tests, e.g. if an object is stored in a database.
   It's the responsibility of the functional tests.
 
