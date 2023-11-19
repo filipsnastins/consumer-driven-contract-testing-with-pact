@@ -1,7 +1,5 @@
 # Consumer-Driven Contract Testing with Pact
 
-**Work-in-progress.**
-
 ![Can I deploy Status](https://filipsnastins.pactflow.io/pacts/provider/service-customers--rest/consumer/frontend--rest/latest/badge.svg)
 
 ![Can I deploy Status](https://filipsnastins.pactflow.io/pacts/provider/service-customers--sns/consumer/service-orders--sns/latest/badge.svg)
@@ -52,7 +50,7 @@ test, and deploy services independently from other development teams in the orga
 It gives us the possibility to independently scale teams and reduce dependencies between them,
 ultimately increasing the agility of the whole organization.
 To facilitate loose coupling between microservices and team autonomy,
-contracts are established between microservices and team boundaries.
+contracts are established between microservice and team boundaries.
 
 A contract establishes a clear shared understanding of how different microservices will communicate with each other.
 A contract includes both the _syntactic_ and _semantic_ expectations of the communication.
@@ -66,9 +64,10 @@ i.e. there are no breaking changes in the contracts.
 
 The most widely used approach for testing compatibility is integrated end-to-end testing.
 With this approach, before releasing a single microservice to the production environment,
-all microservices are deployed to a shared testing environment, and a suite of end-to-end tests is run against them.
+all microservices are deployed to a shared testing environment, and a suite of end-to-end tests is run.
 The promise of integrated end-to-end tests is to discover all incompatible changes between the system components
 and verify that the system works as a whole.
+
 To summarize, to ensure that a single microservice is compatible with the whole system,
 it must be deployed and tested together with all other microservices in a testing environment.
 This contradicts the microservice goal of independent deployability because you can't deploy
@@ -88,14 +87,15 @@ significant drawbacks _at a certain scale point_:
 
 - Since all the teams will depend on the same testing environment, there's a possibility of a queue forming for running the tests.
   While one team is working on fixing a failing test that fails the whole deployment pipeline, other teams will have to wait.
-  This will increase the deployment lead time, ultimately reducing the number of deployments,
+  This will increase the deployment lead time, ultimately reducing the number of deployments and increasing batch size,
   since teams will have to wait for their turn to test their changes. You can scale the number of testing environments
   or have a dedicated testing environment for each team, but only up to a certain point due to the infrastructure and maintenance costs.
 
-- End-to-end test ownership without introducing dependencies between teams is a challenge.
-  A single end-to-end test might span across many microservices and internal team boundaries, testing bigger features as a whole.
+- End-to-end test ownership without introducing dependencies between teams challenging.
+  A single end-to-end test might span across many microservices and team boundaries, testing bigger features as a whole.
   Therefore, an organization might have a dedicated test automation team that writes the end-to-end tests.
-  However, when a test gets broken and needs changes, a development team will have a dependency on the test automation team.
+  This is a problem in it's own regard, because the development teams will be disconnected and uninterested in end-to-end test cases.
+  When a test gets broken and needs changes, a development team will have a dependency on the test automation team.
   Another approach is to have collective ownership of the tests, but that could result in an explosion of test cases
   and decrease in the test codebase coherence, as different teams won't have a clear visibility into what's already been tested.
 
@@ -118,7 +118,7 @@ to learn more techniques for keeping end-to-end test suite manageable.
 For more overall guidance on testing microservices,
 see "[Testing Strategies in a Microservice Architecture](https://martinfowler.com/articles/microservice-testing/)".
 
-**For testing microservice compatibility, an alternative approach to integrated end-to-end testing is contract testing.**
+**For testing microservice compatibility (but not functionality), an alternative approach to integrated end-to-end testing is contract testing.**
 
 > Contract testing is a technique for testing an integration point by checking each application in isolation
 > to ensure the messages it sends or receives conform to a shared understanding that is documented in a "contract".
@@ -135,8 +135,8 @@ This example project will focus on the consumer-driven contract testing.
 ## Consumer-Driven Contract Testing
 
 Consumer-driven contract testing is a type of contract testing where a Consumer of a Provider service
-expresses its expectations about the Provider's behavior in a contract, and the Provider verifies that it
-meets the Consumer's expectations.
+expresses its expectations about the Provider's behavior in a contract and shares the contract with the Provider.
+The Provider uses the given contract to verify that it meets the expectations.
 
 Consumer-driven contract is also a collaboration technique between the Consumer and Provider teams,
 or colleagues on the same team with both the Consumer and Provider services are managed by the same team.
@@ -152,8 +152,8 @@ expose private data, too many implementation details, or would be too expensive 
 will have a conversation with the Consumer team for aligning on the best solution.
 As in Agile, it's the conversations that matter the most, not a contract or a particular tooling and process.
 
-**Don't come to your Provider with a fully specified contract and all the Consumer functionality already implemented.
-Instead, come with a draft contract before starting the implementation and use it as a conversation starter.
+**As a Consumer, don't come to your Provider with a fully specified contract and all the functionality and features already implemented.
+Instead, before starting the implementation come to your Provider with a draft contract or no contract at all, and start a conversation.
 Test your contracts early and often.**
 
 If you're familiar with the [Test Pyramid](https://martinfowler.com/articles/practical-test-pyramid.html) (Mike Cohn),
@@ -207,6 +207,9 @@ More cases at <https://docs.pact.io/getting_started/what_is_pact_good_for#what-i
 
 The example application is a made-up e-commerce system built as microservices.
 
+In the real world, the microservices would be separated into different repositories,
+but for the sake of the example simplicity, all the services are in the same repository.
+
 ### System Context Diagram
 
 ![System context diagram](docs/architecture/c4/level_1_system_context/ecommerce_system_context.png)
@@ -249,10 +252,9 @@ Generated from Pact Broker's <http://localhost:9292/integrations> endpoint with
 
 ### Run Pact Contract Tests Locally with a Self-Hosted Pact Broker
 
-From [Pact Broker Introduction](https://docs.pact.io/pact_broker) page on Pact documentation website:
-
 > The Pact Broker is an application for sharing consumer driven contracts and verification results.
 > The Pact Broker is an open source tool that requires you to deploy, administer and host it yourself.
+> — <https://docs.pact.io/pact_broker>
 
 - Install Pact CLI - [complete installation instruction on GitHub Releases page](https://github.com/pact-foundation/pact-ruby-standalone/releases).
 
@@ -267,7 +269,7 @@ poetry install --with dev
 poetry shell
 ```
 
-- Set PYTHONPATH to include `src` directory.
+- Set PYTHONPATH to include the `src` directory.
 
 ```bash
 export PYTHONPATH=src:$PYTHONPATH
@@ -394,7 +396,7 @@ first, before introducing mandatory blocking steps to the deployment pipeline.
 
 A summary of topics covered by the [Pact CI/CD setup guide](https://docs.pact.io/pact_nirvana):
 
-1. Learn about Pact, talk, and get team alignment to try it out
+1. Learn about Pact, talk, and get team alignment to try it out.
 2. Get a single test working manually.
 3. Manually integrate with Pact Broker/PactFlow.
 4. Integrate Pact Broker/PactFlow into the deployment pipeline.
@@ -407,16 +409,16 @@ A summary of topics covered by the [Pact CI/CD setup guide](https://docs.pact.io
 
 ### Setting up the Deployment Pipeline for the Example Application
 
-From [github.com/pactflow/example-provider](https://github.com/pactflow/example-provider):
-
 > **When using Pact in a CI/CD pipeline, there are two reasons for a Pact verification task to take place:**
 >
 > - When the Consumer changes - to see if the Provider is compatible with the new expectations
 > - When the Provider changes - to make sure it does not break any existing Consumer expectations
+>
+> — <https://github.com/pactflow/example-provider>
 
 **The important part is to establish quick feedback loops for the changes in the contract:**
 
-- Trigger the Provider Contract tests in the Provider CI/CD pipeline when a new Consumer contract version is published.
+- Trigger the Provider contract tests in the Provider CI/CD pipeline when a new Consumer contract version is published.
 - Get notified that changes in your Consumer contract are incompatible with the existing Provider contract,
   i.e. the Provider contract tests failed in the Provider CI/CD pipeline.
 - Before deploying a new version of the Consumer, verify that it's compatible with the currently deployed
@@ -455,10 +457,11 @@ sequenceDiagram
 
     activate Consumer
     Consumer->>Consumer: On commit: run Pact contract tests with 'pytest'
-    Consumer->>PactBroker: Pytest: publish new contract version
+    Consumer->>PactBroker: Pytest: publish a contract with a new git commit ref
     deactivate Consumer
 
     activate PactBroker
+    PactBroker->>PactBroker: Contract has changed
     PactBroker->>Provider: Webhook: 'Consumer' contract requiring verification published
     deactivate PactBroker
 
@@ -485,10 +488,11 @@ sequenceDiagram
 
     activate Consumer
     Consumer->>Consumer: On commit: run Pact contract tests with 'pytest'
-    Consumer->>PactBroker: Pytest: publish new contract version
+    Consumer->>PactBroker: Pytest: publish a contract with a new git commit ref
     deactivate Consumer
 
     activate PactBroker
+    PactBroker->>PactBroker: Contract has changed
     PactBroker->>Provider: Webhook: 'Consumer' contract requiring verification published
     deactivate PactBroker
 
@@ -515,7 +519,7 @@ sequenceDiagram
 
     activate Consumer
     Consumer->>Consumer: On commit: run Pact contract tests
-    Consumer->>PactBroker: Pytest: publish new contract version
+    Consumer->>PactBroker: Pytest: publish a contract with a new git commit ref
     deactivate Consumer
 
     activate PactBroker
@@ -537,7 +541,7 @@ sequenceDiagram
 
     activate Provider
     Provider->>Provider: On commit: run Pact contract tests with 'pytest'
-    Provider->>PactBroker: Pytest: fetch Consumer contracts from 'main' branch or latest deployed version
+    Provider->>PactBroker: Pytest: fetch Consumer contracts from its 'main' branch or latest deployed version
     Provider->>Provider: Pytest: 'run Pact Provider contract tests' against Provider's current branch
     Provider->>Provider: Pytest: provider contract tests passed
     Provider->>PactBroker: Pytest: publish successful verification results
@@ -556,7 +560,7 @@ sequenceDiagram
 
     activate Provider
     Provider->>Provider: On commit: run Pact contract tests with 'pytest'
-    Provider->>PactBroker: Pytest: fetch Consumer contracts from 'main' branch or latest deployed version
+    Provider->>PactBroker: Pytest: fetch Consumer contracts from its 'main' branch or latest deployed version
     Provider->>Provider: Pytest: 'run Pact Provider contract tests' against Provider's current branch
     Provider->>Provider: Pytest: provider contract tests failed
     Provider->>PactBroker: Pytest: publish failed verification results
@@ -611,7 +615,7 @@ to the data. The contract semantics is the meaning of the data. contract testing
 that a Consumer is not only able to parse the data with a schema, but also _understand_ the meaning of the data.
 
 For Protobuf schema management it's worth mentioning [buf.build](https://buf.build/docs).
-buf.build is a Protobuf schema management tool that helps you define, lint, and generate
+It's is a Protobuf schema management tool that helps you define, lint, and generate
 code for your Protobuf schema. One of it's advantages is a schema breaking change detection tool,
 that will help you catch syntactic breaking changes.
 For detecting semantic breaking changes, you would still need to use contract testing.
@@ -867,7 +871,8 @@ both syntactic and semantic, before release to production.
 
 ## Limitations and Corner Cases
 
-- At the time of writing, Pact Python doesn't support Pact Plugins.
+- At the time of writing, Pact Python doesn't support Pact Plugins, which makes testing
+  GraphQL and Protobufs contracts more difficult, but not impossible.
 
 - Pact Pacticipant name must include a communication protocol, .e.g `--rest` or `--sns`.
   Due to Pact handling synchronous HTTP and asynchronous messaging contract tests differently,
@@ -896,6 +901,8 @@ both syntactic and semantic, before release to production.
 - Pact documentation - <https://docs.pact.io>
 
 - How Pact works - <https://pactflow.io/how-pact-works>
+
+- Testing Strategies in a Microservice Architecture - <https://martinfowler.com/articles/microservice-testing/>
 
 - [Building Microservices, 2nd Edition](https://samnewman.io/books/building_microservices_2nd_edition/) - book by Sam Newman.
   Chapter 9 - Testing.
