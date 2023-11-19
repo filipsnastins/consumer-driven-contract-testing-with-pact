@@ -10,6 +10,4 @@
   - [x] References
   - [x] Terraform
   - [x] Testing Protobuf
-  - [ ] Don't use term "consumer contract" and "provider contract"?
-    - A contract is a relationship between the two, not a thing in itself.
   - [ ] Proofread and edit

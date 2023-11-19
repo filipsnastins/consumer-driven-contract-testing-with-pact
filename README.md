@@ -17,14 +17,14 @@ An example of applying Consumer-Driven Contract Testing (CDC) for testing micros
 - [Consumer-Driven Contract Testing with Pact](#consumer-driven-contract-testing-with-pact)
   - [What is Contract Testing](#what-is-contract-testing)
   - [Consumer-Driven Contract Testing](#consumer-driven-contract-testing)
-  - [Pact as a Consumer-Driven Contract Testing Tool](#pact-as-a-consumer-driven-contract-testing-tool)
   - [What Contract Testing is Not](#what-contract-testing-is-not)
+  - [Pact as a Consumer-Driven Contract Testing Tool](#pact-as-a-consumer-driven-contract-testing-tool)
   - [Example Application Architecture (C4)](#example-application-architecture-c4)
     - [System Context Diagram](#system-context-diagram)
     - [Container Diagram](#container-diagram)
   - [Using Pact for Testing the Example Application](#using-pact-for-testing-the-example-application)
     - [Example Application's Pact Network Diagram](#example-applications-pact-network-diagram)
-    - [Run Pact Contract Tests locally with self-hosted Pact Broker](#run-pact-contract-tests-locally-with-self-hosted-pact-broker)
+    - [Run Pact Contract Tests Locally with Self-Hosted Pact Broker](#run-pact-contract-tests-locally-with-self-hosted-pact-broker)
     - [Run Pact Contract Tests with PactFlow.io](#run-pact-contract-tests-with-pactflowio)
   - [Running Pact in a Deployment Pipeline (CI/CD)](#running-pact-in-a-deployment-pipeline-cicd)
     - [Setting up the Deployment Pipeline for the Example Application](#setting-up-the-deployment-pipeline-for-the-example-application)
@@ -35,19 +35,88 @@ An example of applying Consumer-Driven Contract Testing (CDC) for testing micros
     - [Contract Testing Protobufs and Similar Structured Data Serialization Formats](#contract-testing-protobufs-and-similar-structured-data-serialization-formats)
     - [Breaking Consumer Contract](#breaking-consumer-contract)
     - [Breaking Provider Contract](#breaking-provider-contract)
+  - [Best Practices for Writing Consumer Contract Tests with Pact](#best-practices-for-writing-consumer-contract-tests-with-pact)
   - [Contract Testing Beyond Catching Breaking Changes](#contract-testing-beyond-catching-breaking-changes)
   - [Limitations and Corner Cases](#limitations-and-corner-cases)
   - [References](#references)
   - [Development](#development)
     - [Example Application's Sample Requests](#example-applications-sample-requests)
     - [Links](#links)
-    - [Development Commands](#development-commands)
+    - [Commands](#commands)
 
 ## What is Contract Testing
 
-- [ ] Contract testing vs integrated end-to-end testing
+One of the most useful properties of microservices is the ability develop, test and deploy services independently.
+It gives us the possibility to independently scale teams and reduce dependencies between them, ultimately increasing the agility of the whole organization.
+To facilitate loose coupling between microservices and team autonomy, contracts are established between microservices and team boundaries.
+
+A contract establishes a clear shared understanding of how different microservices will communicate with each other.
+A contract includes both the _syntactic_ and _semantic_ expectations of the communication.
+Syntax is the expected message schema and data types. Semantics is the meaning of the message,
+e.g. valid combinations of provided values, and the resulting behavior.
+
+Microservices create value only when they interact with other microservices in the system, therefore they must communicate with each other.
+That's the puzzle: we want to reap the benefits of independent deployability,
+but we must make sure that the services are compatible with each other, i.e. there're no breaking changes in the contracts.
+
+The most widely used technique for testing compatibility is integrated end-to-end testing.
+With this approach, before releasing a single microservice to production environment,
+all microservices are deployed to a shared testing environment, and a suite of end-to-end tests is ran against them.
+The promise of integrated end-to-end tests is to discover all incompatible changes between the system components,
+and verify that the system works as a whole.
+To summarize, to ensure that a single microservice is compatible with the whole system,
+it must be deployed and tested together with all other microservices on a testing environment.
+This contradicts with the goal of microservice independent deployability, because you can't deploy
+a service until it's tested with all other services together at the same time.
+
+The end-to-end testing approach is useful, but in the microservice-based system it has some
+significant drawbacks _at a certain scale point_:
+
+- Integrated end-to-end tests by their nature are slow compared to isolated microservice-level tests.
+  As the system grows and more end-to-end tests are added, the test execution time will grow super-linearly.
+  An alternative to running all the tests at once is to run only a subset of tests that concern a particular microservice's
+  business domain, but that will increase the risk of missing a breaking change in other parts of the system.
+- End-to-end tests are brittle and flaky. Since they depend on the whole system and the state of a testing environment,
+  there're many factors that can cause the tests to fail, even if the system is working correctly.
+  Flaky tests erode the trust in the test suite and the whole deployment pipeline.
+- Since all the teams will depend on the same testing environment, there's a possibility of a queue forming for running the tests.
+  While one team is working on fixing a failing end-to-end test which fails the whole deployment pipeline, other teams will have to wait.
+  This will increase the deployment lead time, ultimately reducing the number of deployments,
+  since teams will have to wait for their turn to test their changes. You can scale number of testing environments
+  or have a dedicated testing environment for each team, but only up to a certain point due to the infrastructure and maintenance costs.
+- End-to-end test ownership without introducing dependencies between teams is a challenge.
+  A single end-to-end test might span across many microservices and internal team boundaries, testing bigger features as a whole.
+  Therefore, an organization might have a dedicated test automation team that writes the end-to-end tests.
+  However, when a test gets broken and needs changes, a development team will have a dependency on the test automation team.
+  Another approach is to have a collective ownership of the tests, but that could result in an explosion of test cases
+  and decrease in the test codebase coherence, as different teams won't have a clear visibility into what's already been tested.
+
+End-to-end tests in a microservice-based system are still useful to verify the system as a whole,
+however, they should be used sparingly, for example, for testing the most critical business flows.
+
+You could also experiment with when the end-to-end tests are run.
+For example, instead of running end-to-end tests in a deployment pipeline, their could be periodically run
+in a production environment. To make it safe, the tests must use fake data, e.g. place orders to known fake customers
+that are configured to not ship real products.
+This approach is called [Synthetic Monitoring (or Semantic Monitoring)](https://martinfowler.com/bliki/SyntheticMonitoring.html).
+It will serve for detecting system-wide issues, but won't be able to prevent release of incompatible changes.
+
+The immediate drawbacks of end-to-end tests can be remedied by adjusting the scope of the tests,
+experimenting with test ownership and test environment availability, but the fundamental problem of
+end-to-end tests is that _they don't scale well as the system growth_.
+
+**For testing microservice compatibility, an alternative approach to integrated end-to-end testing is to contract testing.**
+
+> Contract testing is a technique for testing an integration point by checking each application in isolation
+> to ensure the messages it sends or receives conform to a shared understanding that is documented in a "contract".
+> — _<https://docs.pact.io/#what-is-contract-testing>_
+
+- [x] Contract testing vs integrated end-to-end testing
 - [ ] Contract testing vs functional testing
 - [ ] Types of contract testing: consumer-driven, bi-directional, provider-driven etc.
+- [ ] <https://www.youtube.com/watch?v=vq8o_AFfHhE>
+
+... TODO
 
 ## Consumer-Driven Contract Testing
 
@@ -57,17 +126,27 @@ An example of applying Consumer-Driven Contract Testing (CDC) for testing micros
   - The explicit reminder of [Conway’s Law](https://martinfowler.com/bliki/ConwaysLaw.html).
   - Agile stories are often referred to as a placeholder for a conversation. CDCs are just like that
 
-## Pact as a Consumer-Driven Contract Testing Tool
-
-- [ ] When to not use Pact
-- [ ] Best practices when writing contracts
-- [ ] Testing syntax vs semantics
-- [ ] Testing Protobufs
-- [ ] Link to python-pact library and examples
+... TODO
 
 ## What Contract Testing is Not
 
-- [ ] ...
+- [ ] Not functional testing
+- [ ] Consumers must not exhaustively test all the Provider's functionality
+- [ ] Not for testing public APIs where consumers are not known or there're too many of them
+
+... TODO
+
+## Pact as a Consumer-Driven Contract Testing Tool
+
+This example project uses [Pact](https://pact.io) for consumer-driven contract testing.
+
+> Pact is a code-first tool for testing HTTP and message integrations using contract tests.
+> Contract tests assert that inter-application messages conform to a shared understanding that is documented in a contract.
+> Without contract testing, the only way to ensure that applications will work correctly together is by using expensive and brittle integration tests.
+> — _<https://docs.pact.io/>_
+
+The example project is written in Python, so it uses [Pact Python](https://github.com/pact-foundation/pact-python) implementation.
+Pact is available for many other languages as well, see the full list on the [Pact website](https://pact.io).
 
 ## Example Application Architecture (C4)
 
@@ -83,8 +162,11 @@ The example application is a made-up e-commerce system built as microservices.
 
 ## Using Pact for Testing the Example Application
 
+The example application demonstrates how to use Pact for contract testing microservices that
+communicate over synchronous HTTP (REST and GraphQL), and asynchronous messaging (AWS SNS SQS).
+
 In this example application, the [Pacticipant](https://docs.pact.io/pact_broker/advanced_topics/pacticipant)
-names follow the convention `<application-name>--<communication-protocol>`.
+names follow a convention `<application-name>--<communication-protocol>`.
 For example, `service-customers--rest` is a `service-customers` application communicating over REST (synchronous HTTP),
 and `service-customers--sns` is a `service-customers` application communicating over SNS (asynchronous messaging).
 
@@ -110,7 +192,7 @@ Generated from Pact Broker's <http://localhost:9292/integrations> endpoint with
 
 ![Pact network diagram](docs/pact/network.png)
 
-### Run Pact Contract Tests locally with self-hosted Pact Broker
+### Run Pact Contract Tests Locally with Self-Hosted Pact Broker
 
 From [Pact Broker Introduction](https://docs.pact.io/pact_broker) page on Pact documentation website:
 
@@ -245,11 +327,11 @@ For a complete guide of integrating Pact into your CI/CI workflow, take a look a
 [Pact documentation - CI/CD setup guide](https://docs.pact.io/pact_nirvana).
 
 The Pact guide covers more than just configuring Pact in the CI/CD pipeline,
-but first getting the team aligned on the process of Contract Testing,
+but first getting the team aligned on the process of contract testing,
 and getting started with the simplest and non-intrusive setup that will let
-you evaluate if Contract Testing and Pact are a good fit for your project.
+you evaluate if contract testing and Pact are a good fit for your project.
 
-Since Contract Testing is a collaboration technique, it's important to get the team on board
+Since contract testing is a collaboration technique, it's important to get the team on board
 first, before introducing mandatory blocking steps to the deployment pipeline.
 
 > Contracts are not a replacement for good communication between or within teams.
@@ -467,25 +549,25 @@ and they will continue to work as long as the changes are backwards/forwards com
 
 Protobuf is a schema-driven format, and having a defined schema if very important when working with
 big production systems. However, just adhering to the schema is not enough to ensure compatibility between
-the Consumer and Provider. Therefore, it's important to distinguish `schema` with `contract semantics`.
+the Consumer and Provider. Therefore, it's important to distinguish `schema` from the `contract semantics`.
 
 The Protobuf definition schema is a syntactic construct which doesn't enforce any semantic meaning
-to the data. The contract semantics is the meaning of the data, and Contract Testing allows us to verify
-that a Consumer not only able to parse the data with a schema, but also _understand_ the meaning of the data.
+to the data. The contract semantics is the meaning of the data. contract testing allows us to verify
+that a Consumer is not only able to parse the data with a schema, but also _understand_ the meaning of the data.
 
 For Protobuf schema management it's worth mentioning [buf.build](https://buf.build/docs).
 buf.build is a Protobuf schema management tool that helps you define, lint, and generate
 code for your Protobuf schema. One of it's advantages is a schema breaking change detection tool,
 that will help you catch syntactic breaking changes.
-For detecting semantic breaking changes, you would still need to use Contract Testing.
+For detecting semantic breaking changes, you would still need to use contract testing.
 
-Read more about the case case for Contract Testing Protobufs and similar
+Read more about the case case for contract testing Protobufs and similar
 interface definition languages (IDL) in the Pact blog:
 
 - <https://pactflow.io/blog/the-case-for-contract-testing-protobufs-grpc-avro>
 - <https://pactflow.io/blog/contract-testing-for-grpc-and-protobufs/>
 
-For more benefits of Contract Testing beyond catching breaking changes (both syntactic and semantic),
+For more benefits of contract testing beyond catching breaking changes (both syntactic and semantic),
 see [Contract Testing Beyond Catching Breaking Changes](#contract-testing-beyond-catching-breaking-changes) section.
 
 Pact supports testing Protobuf contracts with a Protobuf plugin.
@@ -642,19 +724,51 @@ Description of differences
 * Could not find key "name" (keys present are: event_id, correlation_id, customer_id, created_at) at $
 ```
 
+## Best Practices for Writing Consumer Contract Tests with Pact
+
+Based on "Best practices for writing consumer tests" by Beth Skurrie - <https://www.youtube.com/watch?v=oPuHb9Rl8Zo>.
+Watch the full video!
+
+- The key is knowing what _not_ to test.
+- Keep the scope of contract tests limited.
+  Ideally, test only the components of your application that interact with a Provider in isolation.
+  Since the Contract Tests are not a replacement for functional tests, you don't need to test
+  the whole application end-to-end. Read more at ["Testing scope"](https://docs.pact.io/getting_started/testing-scope).
+- Don't use Pact for the functional testing of Consumers or Providers.
+- Don't use Pact for testing business logic or UI.
+- Don't write too restrictive Pact matchers. Make your response expectations as loose as possible.
+- Try to use BDD style notation to describe the business actions, rather than describing
+  HTTP or messaging mechanisms. The contract tests should read like a proper, coherent sentance.
+  - Use Pact's `given`, `upon_receiving`, `with_request` and `will_respond_with`
+    constructs to describe a business action.
+- Use deterministic data. Avoid random data in your Pacts because it will mark a contract as changed,
+  when in fact it hasn't.
+- Don't be afraid of duplication between functional and contract tests.
+  - You can use fakes and mocks in contract tests to simplify and limit their scope.
+  - Functional tests that use real components will catch all functional bugs.
+    It's not in scope of contract tests.
+- It's not the job of the Consumer to be a test harness for the Provider.
+- Responses can have extra keys without failing the verification, but requests cannot - Postel's law.
+- Contract tests aren't designed to operate alone.
+  Contract tests _supplement_ unit, functional and all other types of tests.
+- Contract tests focus only on the messages (requests and responses).
+  Functional tests also check for side effects.
+- Don't check for side effects in contract tests, e.g. if an object is stored in a database.
+  It's the responsibility of the functional tests.
+
 ## Contract Testing Beyond Catching Breaking Changes
 
-The benefits of Contract Testing go beyond catching breaking changes in the contract,
+The benefits of contract testing go beyond catching breaking changes in the contract,
 both syntactic and semantic, before release to production.
 
-- Consumer-Driven Contract Testing is more than a testing approach.
+- Consumer-Driven contract testing is more than a testing approach.
   Used a collaboration technique, it helps to establish clear lines of communication and collaboration
   between microservices and teams that consume them.
 
 - Ensures that compatible versions of the Consumer and Provider are deployed to production,
   e.g. by using Pact's [Can-I-Deploy](https://docs.pact.io/pact_broker/can_i_deploy) tool.
 
-- Provides full visibility into a Provider usage - Consumer-Driven Contract Testing gives the Provider team
+- Provides full visibility into a Provider usage - Consumer-Driven contract testing gives the Provider team
   visibility into how their service is being used by Consumers.
   All the contracts are stored in a centralized place like Pact Broker/PactFlow,
   and the Provider team can see all the Consumers that depend on their service.
@@ -662,7 +776,7 @@ both syntactic and semantic, before release to production.
   and misunderstandings about the Provider usage.
 
 - [Specification by example](https://gojko.net/books/specification-by-example/) -
-  Consumer-Driven Contract Testing facilitates the collaboration
+  Consumer-Driven contract testing facilitates the collaboration
   between the Consumer and Provider teams of defining the contract, driven by real-world
   examples of how the Consumer uses the Provider, rather than using abstract requirements.
   As a result, the Consumer and Provider teams will have a better shared understanding
@@ -684,7 +798,9 @@ both syntactic and semantic, before release to production.
 
 ## Limitations and Corner Cases
 
-- Pacticipant name must include a communication protocol, .e.g `--rest` or `--sns`.
+- At the time of writing, Pact Python doesn't support Pact Plugins.
+
+- Pact Pacticipant name must include a communication protocol, .e.g `--rest` or `--sns`.
   Due to Pact handling synchronous HTTP and asynchronous messaging contract tests differently,
   they can't be mixed in the same Pacticipant.
 
@@ -694,24 +810,39 @@ both syntactic and semantic, before release to production.
   you would need to use `pytest` markers and test selectors (`pytest -m "orders__sns"`).
   This is implemented in this example project.
 
-- GraphQL Contract Testing with python-pact - queries and mutations must be formatted in the same way as in the contract,
+- GraphQL contract testing with python-pact - queries and mutations must be formatted in the same way as in the contract,
   including spaces and new lines, otherwise Pact Mock Server would not be able to match the request body
   (when the request is not JSON, Pact Mock Server does the full string match; GraphQL request is a string).
   One way out would be to always "minify" (remove all whitespace and newlines) the GraphQL queries and mutations
-  before sending the requests.
+  before sending the requests. At the time of writing, GraphQL plugin is not available in the Python Pact library,
+  but is implemented for other languages, e.g. [Pact JS](https://docs.pact.io/implementation_guides/javascript/docs/graphql).
 
 ## References
 
-- <https://martinfowler.com/articles/consumerDrivenContracts.html>
+- Consumer-Driven Contracts: A Service Evolution Pattern -
+  <https://martinfowler.com/articles/consumerDrivenContracts.html>
 
-- <https://martinfowler.com/bliki/ContractTest.html>
+- ContractTest - <https://martinfowler.com/bliki/ContractTest.html>
 
-- <https://docs.pact.io>
+- Pact documentation - <https://docs.pact.io>
+
+- How Pact works - <https://pactflow.io/how-pact-works>
 
 - [Building Microservices, 2nd Edition](https://samnewman.io/books/building_microservices_2nd_edition/) - book by Sam Newman.
   Chapter 9 - Testing.
 
-- The case for Contract Testing Protobufs, gRPC and Avro:
+- Nubank: Why We Killed Our End-to-End Test Suite -
+  <https://building.nubank.com.br/why-we-killed-our-end-to-end-test-suite/>
+
+- Beyond REST - contract testing in the Age of gRPC, Kafka & GraphQL • Matt Fellows • YOW! 2022 - <https://www.youtube.com/watch?v=ESM84C7QKl8>.
+
+- Best practices for writing consumer tests by Beth Skurrie - <https://www.youtube.com/watch?v=oPuHb9Rl8Zo>.
+
+- Testing the boundaries by Sam Newman - <https://pact.io/pactober/2023/sam-newman>.
+
+- Contract testing For Microservices IS A MUST by Dave Farley - <https://www.youtube.com/watch?v=Fh8CqZtghQw>.
+
+- The case for contract testing Protobufs, gRPC and Avro:
 
   - <https://pactflow.io/blog/the-case-for-contract-testing-protobufs-grpc-avro>
   - <https://pactflow.io/blog/contract-testing-for-grpc-and-protobufs/>
@@ -722,7 +853,9 @@ both syntactic and semantic, before release to production.
   - <https://github.com/pactflow/example-consumer>
   - <https://github.com/pactflow/example-provider>
 
-- Other Contract Testing tools:
+- Contract testing tools:
+
+  - <https://pact.io>
   - <https://spring.io/projects/spring-cloud-contract>
   - <https://specmatic.in>
 
@@ -773,16 +906,7 @@ curl -X POST -H "Content-Type: application/json" -d '{"query": "{getAllCustomers
 
 - Order history GraphiQL IDE: <http://localhost:9703/graphql>
 
-### Development Commands
-
-- Generate Protobuf code with [buf](https://buf.build).
-
-```bash
-brew install bufbuild/buf/buf
-
-cd src/adapters/proto
-buf generate .
-```
+### Commands
 
 - Format and lint code.
 
@@ -796,4 +920,20 @@ poetry run lint
 ```bash
 poetry run test
 poetry run test-ci  # With test coverage
+```
+
+- Generate Protobuf code with [buf](https://buf.build).
+
+```bash
+brew install bufbuild/buf/buf
+
+cd src/adapters/proto
+buf generate .
+```
+
+- Generate C4 diagrams with PlantUML from [docs/architecture/c4](docs/architecture/c4)
+  (get plantuml.jar at <https://plantuml.com/starting>).
+
+```bash
+java -jar plantuml.jar -DRELATIVE_INCLUDE="." docs/architecture/c4/**/*.puml
 ```

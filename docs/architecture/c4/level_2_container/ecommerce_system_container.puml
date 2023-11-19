@@ -25,7 +25,7 @@ Rel(buyerPerson, webFrontend, "Uses", "HTTP")
 
 Rel_R(webFrontend, serviceOrders, "Creates new orders", "JSON/HTTP", $tags="sync")
 Rel_R(webFrontend, serviceCustomers, "Registers as a new customer", "JSON/HTTP", $tags="sync")
-Rel_R(webFrontend, serviceOrderHistory, "Views orders history", "GraphQL/HTTP", $tags="sync")
+Rel_R(webFrontend, serviceOrderHistory, "Views order history", "GraphQL/HTTP", $tags="sync")
 
 SHOW_LEGEND()
 @enduml
