@@ -117,6 +117,8 @@ Take a look at Emily Bache's talk "[End-to-End Automated Testing in a Microservi
 to learn more techniques for keeping end-to-end test suite manageable.
 For more overall guidance on testing microservices,
 see "[Testing Strategies in a Microservice Architecture](https://martinfowler.com/articles/microservice-testing/)".
+More on challenges with scaling end-to-end testing at
+"[Nubank: Why We Killed Our End-to-End Test Suite](https://building.nubank.com.br/why-we-killed-our-end-to-end-test-suite/)"
 
 **For testing microservice compatibility (but not functionality), an alternative approach to integrated end-to-end testing is contract testing.**
 
@@ -1011,5 +1013,5 @@ buf generate .
   (get plantuml.jar at <https://plantuml.com/starting>).
 
 ```bash
-java -jar plantuml.jar -DRELATIVE_INCLUDE="." docs/architecture/c4/**/*.puml
+java -jar plantuml.jar -DRELATIVE_INCLUDE="." docs/**/*.puml
 ```
