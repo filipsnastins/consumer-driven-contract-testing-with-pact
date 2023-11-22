@@ -2,7 +2,7 @@
 !include <C4/C4_Container>
 !include ./person/persons.puml
 
-skinparam dpi 125
+skinparam dpi 100
 
 title System Context Diagram for E-Commerce System
 
