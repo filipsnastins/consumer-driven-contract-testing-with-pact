@@ -17,7 +17,7 @@ sqlalchemy = { extras = ["postgresql-asyncpg"], version = "^2.0.22" }
 stockholm = "^0.5.6"
 strawberry-graphql = { extras = ["fastapi"], version = "^0.211.1" }
 structlog = "^23.2.0"
-tomodachi = "^0.26.1"
+tomodachi = "^0.26.3"
 types-aiobotocore-dynamodb = "^2.7.0"
 uvicorn = "^0.23.2"
 uvloop = "^0.19.0"
