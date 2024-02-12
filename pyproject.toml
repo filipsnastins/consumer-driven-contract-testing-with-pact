@@ -15,7 +15,7 @@ pydantic = "^2.4.2"
 pydantic-settings = "^2.0.3"
 sqlalchemy = { extras = ["postgresql-asyncpg"], version = "^2.0.22" }
 stockholm = "^0.5.6"
-strawberry-graphql = { extras = ["fastapi"], version = "^0.211.1" }
+strawberry-graphql = { extras = ["fastapi"], version = "^0.219.2" }
 structlog = "^23.2.0"
 tomodachi = "^0.26.1"
 types-aiobotocore-dynamodb = "^2.7.0"
